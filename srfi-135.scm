@@ -107,10 +107,13 @@
   (import (except (scheme) string-length string-ref string-set!
                            make-string string substring string->list
                            list->string string-fill! write-char
-                           read-char display vector->list)
+                           read-char display vector->list char<=?
+                           )
           (only (r7rs) make-bytevector bytevector? bytevector-u8-set!
                        bytevector-length bytevector-u8-ref utf8->string
-                       string->utf8 make-list exact-integer? vector->list)
+                       string->utf8 make-list exact-integer? vector->list
+                       char<=?
+                       )
           (only (chicken base) define-record-type error include case-lambda)
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
