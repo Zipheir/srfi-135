@@ -37,6 +37,7 @@
 
 (import (scheme)
         (prefix (only (r7rs) char<=?) r7#)
+        (only (r7rs) bytevector-length bytevector-u8-ref)
         (srfi 135))
 
 (define (writeln . xs)
