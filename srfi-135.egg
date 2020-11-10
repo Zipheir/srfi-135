@@ -1,0 +1,7 @@
+((synopsis "SRFI 135: Immutable Texts")
+ (author "William D. Clinger")
+ (license "MIT")
+ (maintainer "Wolfgang Corcoran-Mathe")
+ (dependencies r7rs utf8)
+ (components
+  (extension srfi-135)))
