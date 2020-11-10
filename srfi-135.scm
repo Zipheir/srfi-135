@@ -175,19 +175,6 @@
   (define (string-foldcase s) (string-downcase s))
   (define (char-foldcase c) (char-downcase-single c))
 
-  ;; To run texts-search-test.sps, change the (or) to (and).
-
-  (cond-expand ((or)
-                (export
-                 %textual-contains:naive
-                 %textual-contains:rabin-karp
-                 %textual-contains:boyer-moore
-
-                 %textual-contains-right:naive
-                 %textual-contains-right:boyer-moore
-                 ))
-               (else))
-
   (include "kernel8.body.scm")
   (include "135.body.scm"))
 
