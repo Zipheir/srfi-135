@@ -1,4 +1,5 @@
 ((synopsis "SRFI 135: Immutable Texts")
+ (category data)
  (author "William D. Clinger")
  (license "MIT")
  (maintainer "Wolfgang Corcoran-Mathe")
