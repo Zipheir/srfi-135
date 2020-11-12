@@ -4,5 +4,6 @@
  (license "MIT")
  (maintainer "Wolfgang Corcoran-Mathe")
  (dependencies r7rs utf8)
+ (test-dependencies r7rs)
  (components
   (extension srfi-135)))

@@ -36,6 +36,8 @@
 ;;; library in the srfi subdirectory.
 
 (import (scheme)
+        (chicken base)
+        (chicken eval)
         (prefix (only (r7rs) char<=?) r7#)
         (only (r7rs) bytevector-length bytevector-u8-ref guard)
         (srfi 135))
@@ -50,6 +52,7 @@
   (display " ")
   (write current-test)
   (newline)
+  (exit 1)
   #f)
 
 ;;; To display tests that fail, change "(or " to "(OR ".
@@ -4157,3 +4160,4 @@
     (fail 'textual-split))
 
 (writeln "Done.")
+(exit 0)
