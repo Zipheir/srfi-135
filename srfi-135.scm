@@ -117,7 +117,9 @@
           (only (chicken base) define-record-type error include case-lambda
                                set-record-printer!)
           (only (chicken io) write-string)
+          (chicken type)
           (only (srfi 141) euclidean-remainder)
+          typed-records
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
                                string-titlecase string-copy!)
