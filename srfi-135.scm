@@ -114,7 +114,9 @@
                        string->utf8 make-list exact-integer? vector->list
                        char<=?
                        )
-          (only (chicken base) define-record-type error include case-lambda)
+          (only (chicken base) define-record-type error include case-lambda
+                               set-record-printer!)
+          (only (chicken io) write-string)
           (only (srfi 141) euclidean-remainder)
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
@@ -130,6 +132,14 @@
   (define (char-foldcase c) (char-downcase-single c))
 
   (include "kernel8.body.scm")
+
+  (set-record-printer!
+   text-rtd
+   (lambda (text port)
+     (write-string "«" port)
+     (write-string (textual->string text) port)
+     (write-string "»" port)))
+
   (include "135.body.scm"))
 
 ;;; eof
