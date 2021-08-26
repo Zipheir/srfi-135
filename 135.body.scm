@@ -26,27 +26,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; The following procedures are not part of R7RS (small).
-;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define (last-pair x)
-  (if (and (pair? x) (pair? (cdr x)))
-      (last-pair (cdr x))
-      x))
-
-;;; Returns first n elements of the list x.
-
-(define (list-take x n)
-  (let loop ((n n)
-             (x x)
-             (y '()))
-    (if (= n 0)
-        (reverse y)
-        (loop (- n 1) (cdr x) (cons (car x) y)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
 ;;; Some macros to make textual arguments and optional arguments
 ;;; less painful.
 ;;;
@@ -181,7 +160,7 @@
                       (k     (- k (* k/N N)))
                       (texts (cons (reverse-list->text (list-tail chars k))
                                    texts))
-                      (chars (list-take chars k)))
+                      (chars (take chars k)))
                  (loop k texts chars seed)))
               ((stop? seed)
                (let* ((texts (if (null? chars)
@@ -235,7 +214,7 @@
                (let* ((k/N   (quotient k N))
                       (k     (- k (* k/N N)))
                       (texts (cons (list->text (list-tail chars k)) texts))
-                      (chars (list-take chars k)))
+                      (chars (take chars k)))
                  (loop k texts chars seed)))
               ((stop? seed)
                (let* ((texts (if (null? chars)

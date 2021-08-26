@@ -118,6 +118,7 @@
                                set-record-printer!)
           (only (chicken io) write-string)
           (chicken type)
+          (only (srfi 1) last-pair take)
           (only (srfi 141) euclidean-remainder)
           typed-records
           (utf8)
