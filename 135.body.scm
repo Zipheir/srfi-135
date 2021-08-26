@@ -101,13 +101,16 @@
 ;;;
 ;;; text? is defined by the kernel
 
+(: textual? (* --> boolean))
 (define (textual? x)
   (or (text? x)
       (string? x)))
 
+(: textual-null? (textual --> boolean))
 (define (textual-null? txt)
   (= 0 (textual-length txt)))
 
+(: textual-every ((char -> *) textual integer integer -> *))
 (define-textual-start-end (textual-every pred textual start end)
   (if (= start end)
       #t
@@ -118,6 +121,7 @@
               (and (pred (%text-ref textual i))
                    (loop (+ i 1))))))))
 
+(: textual-any ((char -> *) textual integer integer -> *))
 (define-textual-start-end (textual-any pred textual start end)
   (let loop ((i start))
     (if (= i end)
@@ -131,15 +135,20 @@
 ;;;
 ;;; text-tabulate is defined by the kernel
 
+(: make-text (integer char -> text))
 (define (make-text n c)
   (text-tabulate (lambda (i) c) n))
 
+(: text (#!rest char -> text))
 (define (text . chars)
   (string->text (list->string chars)))
 
 ;;; These next two procedures take care to accumulate texts of
 ;;; the kernel's preferred size, N.
 
+(: text-unfold
+   (procedure procedure procedure * #!optional (or char string text) procedure
+     -> text))
 (define text-unfold
   (case-lambda
    ((stop? mapper succ seed)
@@ -195,6 +204,9 @@
                                   stop? mapper succ seed
                                   base make-final)))))))))))
 
+(: text-unfold-right
+   (procedure procedure procedure * #!optional (or char string text) procedure
+     -> text))
 (define text-unfold-right
   (case-lambda
    ((stop? mapper succ seed)
@@ -262,6 +274,7 @@
 ;;; FIXME: a lot of these could be made more efficient, especially
 ;;; when a string is passed instead of a text.
 
+(: textual->text (textual -> text))
 (define (textual->text x . rest)
   (cond ((string? x)
          (string->text x))
@@ -271,6 +284,7 @@
          (error "illegal argument passed to textual->text : " x))
         (else (apply error rest))))
 
+(: textual->string (textual #!optional integer integer -> string))
 (define textual->string
   (case-lambda
    ((txt)
@@ -290,12 +304,15 @@
            s)
         (string-set! s (- i start) (%text-ref txt i)))))))
 
+(: textual->vector (textual #!optional start end -> (vector-of char)))
 (define-textual-start-end (textual->vector txt start end)
   (list->vector (string->list (textual->string (subtext txt start end)))))
 
+(: textual->list (textual #!optional start end -> (list-of char)))
 (define-textual-start-end (textual->list txt start end)
   (string->list (textual->string (subtext txt start end))))
 
+(: string->text (string #!optional start end -> text))
 (define string->text
   (case-lambda
    ((s)
@@ -305,31 +322,41 @@
    ((s start end)
     (%string->text (substring s start end)))))
 
+;;; FIXME: Optimize these.
+
+(: vector->text ((vector-of char) #!optional start end -> text))
 (define (vector->text v . start/end)
   (%string->text (list->string (apply vector->list v start/end))))
 
+(: list->text ((list-of char) #!optional start end -> text))
 (define (list->text chars . start/end)
   (apply string->text (list->string chars) start/end))
 
+(: reverse-list->text ((list-of char) -> text))
 (define (reverse-list->text chars)
   (string->text (list->string (reverse chars))))
 
 ;;; FIXME: if txt is a string, should just call string->utf8
 
+(: textual->utf8 (textual #!optional integer integer -> bytevector))
 (define-textual-start-end (textual->utf8 txt start end)
   (string->utf8 (textual->string (subtext txt start end))))
 
+(: textual->utf16 (textual #!optional integer integer -> bytevector))
 (define-textual-start-end (textual->utf16 txt start end)
   (%textual->utf16 txt start end #f))
 
+(: textual->utf16be (textual #!optional integer integer -> bytevector))
 (define-textual-start-end (textual->utf16be txt start end)
   (%textual->utf16 txt start end 'big))
 
+(: textual->utf8le (textual #!optional integer integer -> bytevector))
 (define-textual-start-end (textual->utf16le txt start end)
   (%textual->utf16 txt start end 'little))
 
 ;;; FIXME: should this check for illegal code points?
 
+(: %textual->utf8le (textual integer integer symbol -> bytevector))
 (define (%textual->utf16 txt start end endianness)
   (let* ((n (textual-fold (lambda (c n)
                             (cond ((< (char->integer c) #x10000)
@@ -374,6 +401,7 @@
                      (bytevector-u8-set! result (+ j 2 lobits) low1))
                    (loop (+ i 1) (+ j 4)))))))))
 
+(: utf8->text (bytevector #!optional integer integer -> text))
 (define utf8->text
   (case-lambda
    ((bv)
@@ -394,6 +422,7 @@
         (string->text (utf8->string bv start end))
         (complain 'utf8->text bv start end)))))
 
+(: utf16->text (bytevector #!optional integer integer -> text))
 (define utf16->text
   (case-lambda
    ((bv)
@@ -414,6 +443,7 @@
         (%utf16->text bv start end #f)
         (complain 'utf16->text bv start end)))))
 
+(: utf16be->text (bytevector #!optional integer integer -> text))
 (define utf16be->text
   (case-lambda
    ((bv)
@@ -434,6 +464,7 @@
         (%utf16->text bv start end 'big)
         (complain 'utf16be->text bv start end)))))
 
+(: utf16le->text (bytevector #!optional integer integer -> text))
 (define utf16le->text
   (case-lambda
    ((bv)
@@ -457,6 +488,7 @@
         (%utf16->text bv start end 'little)
         (complain 'utf16le->text bv start end)))))
 
+(: %utf16le->text (bytevector integer integer symbol -> text))
 (define (%utf16->text bv start end endianness)
   (let* ((bom (and (not endianness)
                    (< start end)
@@ -516,6 +548,7 @@
 ;;;
 ;;; text-length, text-ref, and subtext are defined by the kernel
 
+(: textual-length (textual --> integer))
 (define (textual-length txt)
   (cond ((string? txt)
          (string-length txt))
@@ -524,6 +557,7 @@
         (else
          (complain 'textual-length txt))))
 
+(: textual-ref (textual integer -> char))
 (define (textual-ref txt i)
   (cond ((string? txt)
          (string-ref txt i))
@@ -532,6 +566,7 @@
         (else
          (complain 'textual-ref txt))))
 
+(: subtextual (textual integer integer -> text))
 (define-textual (subtextual txt start end)
   (subtext txt start end))
 

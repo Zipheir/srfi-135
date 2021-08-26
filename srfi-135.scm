@@ -126,6 +126,8 @@
                                string-titlecase string-copy!)
           (only (utf8-case-map) char-downcase-single))
 
+  (define-type bytevector u8vector)
+
   (define (assertion-violation procname msg . irritants)
     (apply error msg irritants))
 
@@ -135,6 +137,9 @@
   (define (char-foldcase c) (char-downcase-single c))
 
   (include "kernel8.body.scm")
+
+  (define-type text text-rtd)
+  (define-type textual (or text string))
 
   (set-record-printer!
    text-rtd

@@ -21,8 +21,6 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE. 
 
-(define-type bytevector u8vector)
-
 ;;; FIXME: these utilities should be in a separate file
 
 (define (complain name . args)
