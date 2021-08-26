@@ -3,7 +3,7 @@
  (author "William D. Clinger")
  (license "MIT")
  (maintainer "Wolfgang Corcoran-Mathe")
- (dependencies r7rs utf8)
+ (dependencies r7rs utf8 srfi-141)
  (test-dependencies r7rs)
  (components
   (extension srfi-135)))

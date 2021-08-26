@@ -115,60 +115,14 @@
                        char<=?
                        )
           (only (chicken base) define-record-type error include case-lambda)
+          (only (srfi 141) euclidean-remainder)
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
                                string-titlecase string-copy!)
           (only (utf8-case-map) char-downcase-single))
 
-  ;; textual-replicate needs a sensible mod procedure
-
   (define (assertion-violation procname msg . irritants)
     (apply error msg irritants))
-
-      ;; Restricted to exact integers, which is all we need here.
-
-  (define (div-and-mod x y)
-    (cond ((and (exact-integer? x) (exact-integer? y))
-           (cond ((= y 0)
-                  (error "mod: zero divisor" x y))
-                 ((>= x 0)
-                  (values (quotient x y) (remainder x y)))
-                 ((< y 0)
-                                    ; x < 0, y < 0
-                  (let* ((q (quotient x y))
-                         (r (- x (* q y))))
-                    (if (= r 0)
-                        (values q 0)
-                        (values (+ q 1) (- r y)))))
-                 (else
-                                    ; x < 0, y > 0
-                  (let* ((q (quotient x y))
-                         (r (- x (* q y))))
-                    (if (= r 0)
-                        (values q 0)
-                        (values (- q 1) (+ r y)))))))
-          (else
-           (error "div or mod: illegal arguments" x y))))
-
-  (define (div x y)
-    (cond ((and (exact-integer? x)
-                (exact-integer? y)
-                (>= x 0))
-           (quotient x y))
-          (else
-           (call-with-values
-               (lambda () (div-and-mod x y))
-             (lambda (q r) q)))))
-
-  (define (mod x y)
-    (cond ((and (exact-integer? x)
-                (exact-integer? y)
-                (>= x 0))
-           (remainder x y))
-          (else
-           (call-with-values
-               (lambda () (div-and-mod x y))
-             (lambda (q r) r)))))
 
   ;; CHICKEN: We need a Unicode-aware foldcase, so this can't be
   ;; imported from the r7rs egg.

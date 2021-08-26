@@ -1715,7 +1715,7 @@
                  (= len 0))
              (complain 'textual-replicate s from to))
             (else
-             (let* ((from (mod from len)) ; make from non-negative
+             (let* ((from (euclidean-remainder from len))
                     (to (+ from n)))
                (do ((replicates '() (cons s replicates))
                     (replicates-length 0 (+ replicates-length len)))
