@@ -572,23 +572,30 @@
 
 ;;; FIXME: could be faster, but this procedure shouldn't be used much
 
+(: textual-copy (textual #!optional integer integer -> text))
 (define-textual-start-end (textual-copy text start end)
   (string->text (textual->string text start end)))
 
+(: textual-take (textual integer -> text))
 (define-textual (textual-take txt nchars)
   (subtextual txt 0 nchars))
 
+(: textual-drop (textual integer -> text))
 (define-textual (textual-drop txt nchars)
   (subtextual txt nchars (%text-length txt)))
 
+(: textual-take-right (textual integer -> text))
 (define-textual (textual-take-right txt nchars)
   (let ((n (%text-length txt)))
     (subtextual txt (- n nchars) n)))
 
+(: textual-drop-right (textual integer -> text))
 (define-textual (textual-drop-right txt nchars)
   (let ((n (%text-length txt)))
     (subtextual txt 0 (- n nchars))))
 
+(: textual-pad
+   (textual integer #!optional char integer integer -> text))
 (define textual-pad
   (case-lambda
    ((txt len)
@@ -604,6 +611,7 @@
     (%text-pad (%textual->text txt 'textual-pad txt len c start end)
                len c start end))))
 
+(: %text-pad (text integer char integer integer -> text))
 (define (%text-pad txt len c start end)
   (if (and (exact-integer? len)
            (char? c)
@@ -630,6 +638,8 @@
                (subtext txt (- end len) end))))
       (complain 'textual-pad txt len c start end)))
 
+(: textual-pad-right
+   (textual integer #!optional char integer integer -> text))
 (define textual-pad-right
   (case-lambda
    ((txt len)
@@ -646,6 +656,7 @@
                                      'textual-pad-right txt len c start end)
                      len c start end))))
 
+(: %text-pad-right (text integer char integer integer -> text))
 (define (%text-pad-right txt len c start end)
   (if (and (exact-integer? len)
            (char? c)
@@ -672,6 +683,8 @@
                (subtext txt start (+ start len)))))
       (complain 'textual-pad-right txt len c start end)))
 
+(: textual-trim
+   (textual #!optional (char -> boolean) integer integer -> text))
 (define textual-trim
   (case-lambda
    ((txt)
@@ -685,6 +698,7 @@
     (let ((txt (%textual->text txt 'textual-trim txt pred start end)))
       (%text-trim txt pred start end)))))
 
+(: %text-trim (text (char -> boolean) integer integer -> text))
 (define (%text-trim txt pred start end)
   (if (and (procedure? pred)
            (exact-integer? start)
@@ -699,6 +713,8 @@
                (subtext txt i end))))
       (complain 'textual-trim txt pred start end)))
 
+(: textual-trim-right
+   (textual #!optional (char -> boolean) integer integer -> text))
 (define textual-trim-right
   (case-lambda
    ((txt)
@@ -712,6 +728,7 @@
     (let ((txt (%textual->text txt 'textual-trim-right txt pred start end)))
       (%text-trim-right txt pred start end)))))
 
+(: %text-trim-right (text (char -> boolean) integer integer -> text))
 (define (%text-trim-right txt pred start end)
   (if (and (procedure? pred)
            (exact-integer? start)
@@ -726,6 +743,8 @@
                (subtext txt start (+ i 1)))))
       (complain 'textual-trim-right txt pred start end)))
 
+(: textual-trim-both
+   (textual #!optional (char -> boolean) integer integer -> text))
 (define textual-trim-both
   (case-lambda
    ((txt)
@@ -741,6 +760,7 @@
 
 ;;; This is efficient because subtext is fast.
 
+(: %text-trim-both (text (char -> boolean) integer integer -> text))
 (define (%text-trim-both txt pred start end)
   (if (and (procedure? pred)
            (exact-integer? start)
@@ -754,6 +774,8 @@
 
 ;;; Replacement
 
+(: textual-replace
+   (text text integer integer #!optional integer integer -> text))
 (define textual-replace
   (case-lambda
    ((txt1 txt2 start1 end1 start2 end2)
@@ -791,51 +813,61 @@
             (and (binop a b)
                  (loop b rest)))))))
 
+(: textual=? (textual textual #!rest textual -> boolean))
 (define textual=?
   (make-nary-comparison 'textual=?
                         (lambda (a b)
                           (%text-compare a b =))))
 
+(: textual<? (textual textual #!rest textual -> boolean))
 (define textual<?
   (make-nary-comparison 'textual<?
                         (lambda (a b)
                           (%text-compare a b <))))
 
+(: textual<=? (textual textual #!rest textual -> boolean))
 (define textual<=?
   (make-nary-comparison 'textual<=?
                         (lambda (a b)
                           (%text-compare a b <=))))
 
+(: textual>? (textual textual #!rest textual -> boolean))
 (define textual>?
   (make-nary-comparison 'textual>?
                         (lambda (a b)
                           (%text-compare a b >))))
 
+(: textual>=? (textual textual #!rest textual -> boolean))
 (define textual>=?
   (make-nary-comparison 'textual>=?
                         (lambda (a b)
                           (%text-compare a b >=))))
 
+(: textual-ci=? (textual textual #!rest textual -> boolean))
 (define textual-ci=?
   (make-nary-comparison 'textual-ci=?
                         (lambda (a b)
                           (%text-compare-ci a b = string-ci=?))))
 
+(: textual-ci<? (textual textual #!rest textual -> boolean))
 (define textual-ci<?
   (make-nary-comparison 'textual-ci<?
                         (lambda (a b)
                           (%text-compare-ci a b < string-ci<?))))
 
+(: textual-ci<=? (textual textual #!rest textual -> boolean))
 (define textual-ci<=?
   (make-nary-comparison 'textual-ci<=?
                         (lambda (a b)
                           (%text-compare-ci a b <= string-ci<=?))))
 
+(: textual-ci>? (textual textual #!rest textual -> boolean))
 (define textual-ci>?
   (make-nary-comparison 'textual-ci>?
                         (lambda (a b)
                           (%text-compare-ci a b > string-ci>?))))
 
+(: textual-ci>=? (textual textual #!rest textual -> boolean))
 (define textual-ci>=?
   (make-nary-comparison 'textual-ci>=?
                         (lambda (a b)
@@ -846,6 +878,7 @@
 ;;; greater than b (+1), computes the boolean result by
 ;;; calling make-boolean on that numerical value and 0.
 
+(: %text-compare (text text (integer integer -> boolean) -> boolean))
 (define (%text-compare a b make-boolean)
   (let* ((na (%text-length a))
          (nb (%text-length b))
@@ -866,6 +899,9 @@
 ;;; If either text contains non-ASCII characters, both are converted
 ;;; to strings and compared using string-pred.
 
+(: %text-compare
+   (text text (integer integer -> boolean) (string string -> boolean)
+     -> boolean))
 (define (%text-compare-ci a b make-boolean string-pred)
   (let* ((na (%text-length a))
          (nb (%text-length b))
@@ -950,24 +986,36 @@
    ((t1 t2 start1 end1 start2 end2 oops . rest)
     (apply complain name t1 t2 start1 end1 start2 end2 oops rest))))
 
+(: textual-prefix-length
+   (textual textual #!optional integer integer integer integer
+     -> integer))
 (define textual-prefix-length
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
      (%text-prefix-length txt1 txt2 start1 end1 start2 end2))
    'textual-prefix-length))
 
+(: textual-suffix-length
+   (textual textual #!optional integer integer integer integer
+     -> integer))
 (define textual-suffix-length
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
      (%text-suffix-length txt1 txt2 start1 end1 start2 end2))
    'textual-suffix-length))
 
+(: textual-prefix?
+   (textual textual #!optional integer integer integer integer
+     -> boolean))
 (define textual-prefix?
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
      (%text-prefix? txt1 txt2 start1 end1 start2 end2))
    'textual-prefix?))
 
+(: textual-suffix?
+   (textual textual #!optional integer integer integer integer
+     -> boolean))
 (define textual-suffix?
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
@@ -976,6 +1024,8 @@
 
 ;;; All error checking has already been done.
 
+(: %text-prefix-length
+   (text text integer integer integer integer -> integer))
 (define (%text-prefix-length txt1 txt2 start1 end1 start2 end2)
   (let* ((k1   (- end1 start1))
          (k2   (- end2 start2))
@@ -988,6 +1038,8 @@
              (loop (+ i 1) (+ j 1)))
             (else (- i start1))))))
 
+(: %text-suffix-length
+   (text text integer integer integer integer -> integer))
 (define (%text-suffix-length txt1 txt2 start1 end1 start2 end2)
   (let* ((k1     (- end1 start1))
          (k2     (- end2 start2))
@@ -1000,12 +1052,16 @@
              (loop (- i 1) (- j 1)))
             (else (- end1 i 1))))))
 
+(: %text-prefix?
+   (text text integer integer integer integer -> boolean))
 (define (%text-prefix? txt1 txt2 start1 end1 start2 end2)
   (let ((k1 (- end1 start1))
         (k2 (- end2 start2)))
     (and (<= k1 k2)
          (= k1 (%text-prefix-length txt1 txt2 start1 end1 start2 end2)))))
 
+(: %text-suffix?
+   (text text integer integer integer integer -> boolean))
 (define (%text-suffix? txt1 txt2 start1 end1 start2 end2)
   (let ((k1 (- end1 start1))
         (k2 (- end2 start2)))
@@ -1016,6 +1072,9 @@
 
 ;;; Searching
 
+(: textual-index
+   (textual (char -> boolean) #!optional integer integer
+     -> (or integer false)))
 (define-textual (textual-index txt pred . rest)
   (let ((start (if (null? rest) 0 (car rest)))
         (end (if (or (null? rest) (null? (cdr rest)))
@@ -1034,6 +1093,9 @@
                  (loop (+ i 1)))))
         (apply complain 'textual-index txt pred rest))))
 
+(: textual-index-right
+   (textual (char -> boolean) #!optional integer integer
+     -> (or integer false)))
 (define-textual (textual-index-right txt pred . rest)
   (let ((start (if (null? rest) 0 (car rest)))
         (end (if (or (null? rest) (null? (cdr rest)))
@@ -1052,12 +1114,21 @@
                  (loop (- i 1)))))
         (apply complain 'textual-index-right txt pred rest))))
 
+(: textual-skip
+   (textual (char -> boolean) #!optional integer integer
+     -> (or integer false)))
 (define (textual-skip txt pred . rest)
   (apply textual-index txt (lambda (x) (not (pred x))) rest))
 
+(: textual-skip-right
+   (textual (char -> boolean) #!optional integer integer
+     -> (or integer false)))
 (define (textual-skip-right txt pred . rest)
   (apply textual-index-right txt (lambda (x) (not (pred x))) rest))
 
+(: textual-contains
+   (textual textual #!optional integer integer integer integer
+     -> (or integer false)))
 (define (textual-contains t1 t2 . rest0)
   (let* ((txt1 (%textual->text t1 'textual-contains t1 t2))
          (txt2 (%textual->text t2 'textual-contains t1 t2))
@@ -1099,6 +1170,9 @@
 (define %threshold:longer 1)    ; is txt1 at least this much longer?
 (define %threshold:rightmost 2) ; are rightmost characters the same?
 
+(: %textual-contains
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains txt1 txt2 start1 end1 start2 end2)
   (let ((n1 (- end1 start1))
         (n2 (- end2 start2)))
@@ -1124,6 +1198,9 @@
           (else
            (%textual-contains:rabin-karp txt1 txt2 start1 end1 start2 end2)))))
 
+(: %textual-contains:naive
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains:naive txt1 txt2 start1 end1 start2 end2)
   (let* ((n1 (- end1 start1))
          (n2 (- end2 start2))
@@ -1136,6 +1213,9 @@
             (else
              (loop (+ i 1)))))))
 
+(: %textual-contains:rabin-karp
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains:rabin-karp txt1 txt2 start1 end1 start2 end2)
   (define (hash txt start end)
     (do ((i start (+ i 1))
@@ -1164,6 +1244,9 @@
 ;;; This is actually the Boyer-Moore-Horspool algorithm,
 ;;; but the name is already pretty long.
 
+(: %textual-contains:boyer-moore
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains:boyer-moore txt1 txt2 start1 end1 start2 end2)
   (if (= start2 end2)
       start1
@@ -1197,6 +1280,9 @@
 
 ;;; FIXME: no Rabin-Karp algorithm for now
 
+(: textual-contains-right
+   (textual textual #!optional integer integer integer integer
+     -> (or integer false)))
 (define (textual-contains-right t1 t2 . rest0)
   (let* ((txt1 (%textual->text t1 'textual-contains-right t1 t2))
          (txt2 (%textual->text t2 'textual-contains-right t1 t2))
@@ -1219,6 +1305,9 @@
         (%textual-contains-right txt1 txt2 start1 end1 start2 end2)
         (apply complain 'textual-contains-right t1 t2 rest0))))
 
+(: %textual-contains-right
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains-right txt1 txt2 start1 end1 start2 end2)
   (let ((n1 (- end1 start1))
         (n2 (- end2 start2)))
@@ -1235,6 +1324,9 @@
            (%textual-contains-right:boyer-moore
             txt1 txt2 start1 end1 start2 end2)))))
 
+(: %textual-contains-right:naive
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains-right:naive txt1 txt2 start1 end1 start2 end2)
   (let* ((n1 (- end1 start1))
          (n2 (- end2 start2))
@@ -1250,6 +1342,9 @@
 ;;; This is actually the Boyer-Moore-Horspool algorithm,
 ;;; but the name is already pretty long.
 
+(: %textual-contains-right:boyer-moore
+   (textual textual integer integer integer integer
+     -> (or integer false)))
 (define (%textual-contains-right:boyer-moore txt1 txt2 start1 end1 start2 end2)
   (if (= start2 end2)
       end1
@@ -1290,6 +1385,7 @@
 ;;;
 ;;; For all other cases, calls the corresponding procedures for strings.
 
+(: textual-upcase (textual -> text))
 (define (textual-upcase txt)
   (cond ((string? txt)
          (string->text (string-upcase txt)))
@@ -1298,6 +1394,7 @@
         (else
          (complain 'textual-upcase txt))))
 
+(: textual-downcase (textual -> text))
 (define (textual-downcase txt)
   (cond ((string? txt)
          (string->text (string-downcase txt)))
@@ -1306,6 +1403,9 @@
         (else
          (complain 'textual-downcase txt))))
 
+;;; FIXME: Provide real implementations of these on texts.
+
+(: textual-foldcase (textual -> text))
 (define (textual-foldcase txt)
   (cond ((string? txt)
          (string->text (string-foldcase txt)))
@@ -1314,6 +1414,7 @@
         (else
          (complain 'textual-foldcase txt))))
 
+(: textual-titlecase (textual -> text))
 (define (textual-titlecase txt)
   (cond ((string? txt)
          (string->text (string-titlecase txt)))
@@ -1323,6 +1424,7 @@
         (else
          (complain 'textual-titlecase txt))))
 
+(: %text-upcase (text -> text))
 (define (%text-upcase txt)
   (let* ((n (%text-length txt)))
 
@@ -1370,6 +1472,7 @@
 ;;; The string-caser is either string-downcase or string-foldcase.
 ;;; For ASCII, down-casing and fold-casing are the same.
 
+(: %text-downcase (text -> text))
 (define (%text-downcase txt string-caser)
   (let* ((n (%text-length txt)))
 
@@ -1420,9 +1523,12 @@
 ;;;
 ;;; textual-concatenate is defined by the kernel
 
+(: textual-append (#!rest textual -> text))
 (define (textual-append . texts)
   (textual-concatenate texts))
 
+(: textual-concatenate-reverse
+   ((list-of textual) #!optional textual integer -> text))
 (define textual-concatenate-reverse
   (case-lambda
    ((texts)
@@ -1437,6 +1543,7 @@
                                                   texts final-textual end)
                                   0 end)))))
 
+(: textual-join ((list-of textual) #!optional textual symbol -> text))
 (define textual-join
   (case-lambda
    ((textuals)
@@ -1472,6 +1579,7 @@
 
 ;;; Fold & map & friends
 
+(: textual-fold (procedure * textual #!optional integer integer -> *))
 (define-textual-start-end (textual-fold kons knil txt start end)
   (if (procedure? kons)
       (let loop ((knil knil)
@@ -1482,6 +1590,8 @@
             knil))
       (complain 'textual-fold kons knil txt start end)))
 
+(: textual-fold-right
+   (procedure * textual #!optional integer integer -> *))
 (define-textual-start-end (textual-fold-right kons knil txt start end)
   (if (procedure? kons)
       (let loop ((knil knil)
@@ -1492,6 +1602,9 @@
             knil))
       (complain 'textual-fold-right kons knil txt start end)))
 
+(: textual-map
+   ((#!rest char -> (or char string text)) textual #!rest textual
+     -> text))
 (define textual-map
   (case-lambda
    ((proc txt)
@@ -1499,6 +1612,7 @@
    ((proc txt1 txt2 . rest)
     (%textual-mapn proc (cons txt1 (cons txt2 rest))))))
 
+(: %textual-map1 ((char -> (or char string text)) textual -> text))
 (define (%textual-map1 proc txt)
   (let ((txt (%textual->text txt 'textual-map proc txt)))
     (if (procedure? proc)
@@ -1527,6 +1641,8 @@
                                        (%textual-map-bad-result proc x))))))))))
         (complain 'textual-map proc txt))))
 
+(: %textual-mapn
+   ((#!rest char -> (or char string text)) (list-of textual) -> text))
 (define (%textual-mapn proc textuals)
   (if (procedure? proc)
       (let* ((texts (map (lambda (txt)
@@ -1557,6 +1673,7 @@
                                      (%textual-map-bad-result proc x))))))))))
       (complain 'textual-map proc textuals)))
 
+;; FIXME: Misleading error message.
 (define (%textual-map-bad-result proc x)
   (error "textual-map: proc returned non-character" x))
 
@@ -1564,6 +1681,8 @@
 ;;; in reverse order, converts the second argument into a text and
 ;;; returns that text consed onto the first argument.
 
+(: %text-map-pieces
+   ((list-of texts) (list-of (or char string text)) -> (list-of text)))
 (define (%text-map-pieces texts stuff)
   (let loop ((revstuff stuff)
              (stuff '())
@@ -1593,6 +1712,8 @@
                            ((string? x) (string-length x))
                            (else (text-length x)))))))))
 
+(: textual-for-each
+   ((#!rest char -> *) textual #!rest textual -> undefined))
 (define textual-for-each
   (case-lambda
    ((proc txt)
@@ -1600,6 +1721,7 @@
    ((proc txt1 txt2 . rest)
     (%textual-for-eachn proc (cons txt1 (cons txt2 rest))))))
 
+(: textual-for-each1 ((char -> *) textual -> undefined))
 (define (%textual-for-each1 proc txt)
   (let ((txt (%textual->text txt 'textual-for-each proc txt)))
     (if (procedure? proc)
@@ -1610,6 +1732,7 @@
                        (loop (+ i 1))))))
         (complain 'textual-for-each proc txt))))
 
+(: textual-for-eachn ((#!rest char -> *) (list-of textual) -> undefined))
 (define (%textual-for-eachn proc textuals)
   (if (procedure? proc)
       (let* ((texts (map (lambda (txt)
@@ -1622,6 +1745,7 @@
                      (loop (+ i 1))))))
       (complain 'textual-for-each proc textuals)))
 
+(: %fetch-all ((list-of text) integer -> (list-of char)))
 (define (%fetch-all texts i)
   (if (null? texts)
       '()
@@ -1630,6 +1754,9 @@
 
 ;;; FIXME: there's no reason to convert a string to a text here
 
+(: textual-map-index
+   ((integer -> (or char string text)) textual #!optional integer integer
+     -> text))
 (define-textual-start-end (textual-map-index proc txt start end)
   (if (procedure? proc)
       (let ((n end))
@@ -1659,6 +1786,8 @@
 
 ;;; FIXME: there's no reason to convert a string to a text here
 
+(: textual-for-each-index
+   ((integer -> *) textual #!optional integer integer -> undefined))
 (define-textual-start-end (textual-for-each-index proc txt start end)
   (if (procedure? proc)
       (let ((n end))
@@ -1668,6 +1797,8 @@
                      (loop (+ i 1))))))
       (complain 'textual-for-each-index proc txt)))
 
+(: textual-count
+   (textual (char -> boolean) #!optional integer integer -> integer))
 (define-textual (textual-count txt pred . rest)
   (let ((start (if (null? rest) 0 (car rest)))
         (end (if (or (null? rest) (null? (cdr rest)))
@@ -1685,6 +1816,8 @@
                       0 txt start end)
         (complain 'textual-count txt pred start end))))
 
+(: textual-filter
+   ((char -> boolean) textual #!optional integer integer -> text))
 (define-textual-start-end (textual-filter pred txt start end)
   (if (procedure? pred)
       (textual-map (lambda (c) (if (pred c) c ""))
@@ -1693,12 +1826,15 @@
 
 ;;; FIXME: checks arguments twice
 
+(: textual-filter
+   ((char -> boolean) textual #!optional integer integer -> text))
 (define-textual-start-end (textual-remove pred txt start end)
   (textual-filter (lambda (c) (not (pred c))) txt start end))
 
 ;;; FIXME: not linear-time unless string-set! is O(1)
 ;;; (but this is a pretty useless procedure anyway)
 
+(: textual-reverse (textual #!optional integer integer -> text))
 (define-textual-start-end (textual-reverse txt start end)
   (let* ((n (- end start))
          (s (make-string n)))
@@ -1711,6 +1847,8 @@
 
 ;;; Replication & splitting
 
+(: textual-replicate
+   (textual integer integer #!optional integer integer -> text))
 (define textual-replicate
   (case-lambda
    ((s from to start end)
@@ -1737,6 +1875,9 @@
                     (subtext (apply textual-append replicates)
                              from to))))))))))
 
+(: textual-split
+   (textual textual #!optional symbol integer integer integer
+     -> (list-of text)))
 (define textual-split
   (case-lambda
    ((s delimiter grammar limit start end)
@@ -1781,6 +1922,7 @@
         (else
          (bad-arguments)))))))
 
+(: %text-split-into-characters (text integer -> (list-of text)))
 (define (%text-split-into-characters s limit)
   (let ((n (%text-length s)))
     (cond ((> n (+ limit 1))
@@ -1791,6 +1933,7 @@
 
 ;;; FIXME: inefficient
 
+(: %text-split-using-word (text text integer -> (list-of text)))
 (define (%text-split-using-word txt sep limit)
   (let loop ((i 0)
              (limit limit)
