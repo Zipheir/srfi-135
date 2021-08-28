@@ -21,23 +21,6 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE. 
 
-;;; FIXME: these utilities should be in a separate file
-
-(define (complain name . args)
-  (apply error
-         (string-append (symbol->string name) ": illegal arguments")
-         args))
-
-(: list->bytevector ((list-of fixnum) -> bytevector))
-(define (list->bytevector bytes)
-  (let* ((n (length bytes))
-         (bv (make-bytevector n)))
-    (do ((i 0 (+ i 1))
-         (bytes bytes (cdr bytes)))
-        ((= i n))
-      (bytevector-u8-set! bv i (car bytes)))
-    bv))
-
 ;;; 1-argument version for internal use
 
 (define (%string->text s)
