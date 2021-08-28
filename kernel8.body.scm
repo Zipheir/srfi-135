@@ -74,32 +74,28 @@
 
 (: text-length (text -> integer))
 (define (text-length txt)
-  (if (text? txt)
-      (length&i0.length (text.k txt))
-      (error "text-length: not a text" txt)))
+  (assert (text? txt) 'text-length "illegal argument" txt)
+  (length&i0.length (text.k txt)))
 
 (: text-ref (text integer -> char))
 (define (text-ref txt i)
-  (if (and (text? txt)
-           (exact-integer? i)
-           (<= 0 i))
-      (let* ((k      (text.k txt))
-             (chunks (text.chunks txt))
-             (len    (length&i0.length k))
-             (i0     (length&i0.i0 k))
-             (i+i0   (+ i i0))
-             (j      (quotient i+i0 N))
-             (ii     (remainder i+i0 N)))
-        (if (< i len)
-            (let* ((sj (vector-ref chunks j))
-                   (sjn (bytevector-length sj)))
-              (if (if (< j (- (vector-length chunks) 1))
-                      (= sjn N)
-                      (= sjn (remainder (+ i0 len) N)))
-                  (integer->char (bytevector-u8-ref sj ii))
-                  (%utf8-ref sj ii)))
-            (error "text-ref: index out of range" txt i)))
-      (error "text-ref: illegal arguments" txt i)))
+  (assert (text? txt) 'text-ref "illegal argument" txt)
+  (assert (exact-natural? i) 'text-ref "illegal argument" i)
+  (let* ((k      (text.k txt))
+         (chunks (text.chunks txt))
+         (len    (length&i0.length k))
+         (i0     (length&i0.i0 k))
+         (i+i0   (+ i i0))
+         (j      (quotient i+i0 N))
+         (ii     (remainder i+i0 N)))
+    (assert (< i len) 'text-ref "index out of range" txt i)
+    (let* ((sj (vector-ref chunks j))
+           (sjn (bytevector-length sj)))
+      (if (if (< j (- (vector-length chunks) 1))
+              (= sjn N)
+              (= sjn (remainder (+ i0 len) N)))
+          (integer->char (bytevector-u8-ref sj ii))
+          (%utf8-ref sj ii)))))
 
 ;;; Non-checking versions for internal use.
 
@@ -179,6 +175,8 @@
 
 (: text-tabulate ((integer -> char) integer -> text))
 (define (text-tabulate proc len)
+  (assert (procedure? proc) 'text-tabulate "illegal argument" proc)
+  (assert (exact-natural? len) 'text-tabulate "illegal argument" len)
   (if (= 0 len)
       the-empty-text
       (let loop ((i len)       ; highest index that's been tabulated
@@ -198,50 +196,49 @@
               (else
                (let* ((i-1 (- i 1))
                       (c (proc i-1)))
-                 (if (char? c)
-                     (let ((cp (char->integer c)))
-                       (loop i-1
-                             chunks
-                             (cond ((< cp #x0080)
-                                    (cons cp bytes))
-                                   ((< cp #x0800)
-                                    (let* ((bits1 (quotient cp 64))
-                                           (bits2 (remainder cp 64))
-                                           (byte1 (+ bits1 #b11000000))
-                                           (byte2 (+ bits2 #b10000000)))
-                                      (cons byte1 (cons byte2 bytes))))
-                                   ((< cp #x10000)
-                                    (let* ((bits1 (quotient cp (* 64 64)))
-                                           (bits2 (quotient
-                                                   (remainder cp (* 64 64))
-                                                   64))
-                                           (bits3 (remainder cp 64))
-                                           (byte1 (+ bits1 #b11100000))
-                                           (byte2 (+ bits2 #b10000000))
-                                           (byte3 (+ bits3 #b10000000)))
-                                      (cons byte1
-                                            (cons byte2
-                                                  (cons byte3 bytes)))))
-                                   (else
-                                    (let* ((bits1 (quotient cp (* 64 64 64)))
-                                           (bits2 (quotient
-                                                   (remainder cp (* 64 64 64))
-                                                   (* 64 64)))
-                                           (bits3 (quotient
-                                                   (remainder cp (* 64 64))
-                                                   64))
-                                           (bits4 (remainder cp 64))
-                                           (byte1 (+ bits1 #b11110000))
-                                           (byte2 (+ bits2 #b10000000))
-                                           (byte3 (+ bits3 #b10000000))
-                                           (byte4 (+ bits4 #b10000000)))
-                                      (cons byte1
-                                            (cons byte2
-                                                  (cons byte3
-                                                        (cons byte4
-                                                              bytes)))))))))
-                     (error "text-tabulate: proc returned a non-character"
-                            proc len c))))))))
+                 (assert (char? c) 'text-tabulate
+                   "proc returned a non-character value" c len)
+                 (let ((cp (char->integer c)))
+                   (loop i-1
+                         chunks
+                         (cond ((< cp #x0080)
+                                (cons cp bytes))
+                               ((< cp #x0800)
+                                (let* ((bits1 (quotient cp 64))
+                                       (bits2 (remainder cp 64))
+                                       (byte1 (+ bits1 #b11000000))
+                                       (byte2 (+ bits2 #b10000000)))
+                                  (cons byte1 (cons byte2 bytes))))
+                               ((< cp #x10000)
+                                (let* ((bits1 (quotient cp (* 64 64)))
+                                       (bits2 (quotient
+                                               (remainder cp (* 64 64))
+                                               64))
+                                       (bits3 (remainder cp 64))
+                                       (byte1 (+ bits1 #b11100000))
+                                       (byte2 (+ bits2 #b10000000))
+                                       (byte3 (+ bits3 #b10000000)))
+                                  (cons byte1
+                                        (cons byte2
+                                              (cons byte3 bytes)))))
+                               (else
+                                (let* ((bits1 (quotient cp (* 64 64 64)))
+                                       (bits2 (quotient
+                                               (remainder cp (* 64 64 64))
+                                               (* 64 64)))
+                                       (bits3 (quotient
+                                               (remainder cp (* 64 64))
+                                               64))
+                                       (bits4 (remainder cp 64))
+                                       (byte1 (+ bits1 #b11110000))
+                                       (byte2 (+ bits2 #b10000000))
+                                       (byte3 (+ bits3 #b10000000))
+                                       (byte4 (+ bits4 #b10000000)))
+                                  (cons byte1
+                                        (cons byte2
+                                              (cons byte3
+                                                    (cons byte4
+                                                          bytes)))))))))))))))
 
 ;;; FIXME: should the fast case do something different
 ;;; if the length of the result is sufficiently small?
@@ -254,15 +251,10 @@
 
 (: subtext (text integer integer -> text))
 (define (subtext txt start end)
-  (cond ((and (text? txt)
-              (exact-integer? start)
-              (exact-integer? end)
-              (<= 0 start end))
-         (%subtext txt start end))
-#;      ((string? txt)
-         (%string->text (substring txt start end)))
-        (else
-         (complain 'subtext txt start end))))         
+  (assert (text? txt) 'subtext "illegal argument" txt)
+  (assert (exact-natural? start) 'subtext "illegal argument" start)
+  (assert (exact-natural? end) 'subtext "illegal argument" end)
+  (%subtext txt start end))
 
 (: %subtext (text integer integer -> text))
 (define (%subtext txt start end)
@@ -276,22 +268,21 @@
          (jstart (quotient i+i0 N))
          (jend   (quotient end+i0 N))
          (jlen   (quotient len N)))
-    (if (<= end len)
-        (cond ((= start end)
-               the-empty-text)
-              ((and (= 0 jstart)
-                    (= jlen jend))
-               ;; the fast case
-               (%new-text (- end start) i+i0 chunks))
-              (else
-               (let* ((v (make-vector (+ 1 (- jend jstart)))))
-                 (do ((j jstart (+ j 1)))
-                     ((> j jend))
-                   (vector-set! v (- j jstart) (vector-ref chunks j)))
-                 (%new-text (- end start)
-                            (remainder i+i0 N)
-                            v))))
-        (error "subtext: end out of range" txt start end))))
+    (assert (<= end len) 'subtext "end out of range" txt start end)
+    (cond ((= start end)
+           the-empty-text)
+          ((and (= 0 jstart)
+                (= jlen jend))
+           ;; the fast case
+           (%new-text (- end start) i+i0 chunks))
+          (else
+           (let* ((v (make-vector (+ 1 (- jend jstart)))))
+             (do ((j jstart (+ j 1)))
+                 ((> j jend))
+               (vector-set! v (- j jstart) (vector-ref chunks j)))
+             (%new-text (- end start)
+                        (remainder i+i0 N)
+                        v))))))
 
 ;;; There are a lot of special cases that could be exploited here:
 ;;;     share the characters of the longest text
@@ -319,9 +310,10 @@
 
 (: textual-concatenate ((list-of textual) -> text))
 (define (textual-concatenate texts)
-  (cond ((not (list? texts))
-         (complain 'textual-concatenate texts))
-        ((null? texts) the-empty-text)
+  ;; Not foolproof, but cheaper than list?.
+  (assert (pair-or-null? texts)
+    'textual-concatenate "illegal argument" texts)
+  (cond ((null? texts) the-empty-text)
         ((null? (cdr texts))
          (let ((txt (car texts)))
            (cond ((text? txt) txt)

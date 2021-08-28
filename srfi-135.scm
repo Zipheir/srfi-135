@@ -115,7 +115,7 @@
                        char<=?
                        )
           (only (chicken base) define-record-type error include case-lambda
-                               set-record-printer!)
+                               set-record-printer! assert)
           (only (chicken io) write-string)
           (chicken type)
           (only (srfi 1) last-pair take)
@@ -151,6 +151,12 @@
           ((= i n))
         (bytevector-u8-set! bv i (car bytes)))
       bv))
+
+  (define (pair-or-null? x)
+    (or (null? x) (pair? x)))
+
+  (define (exact-natural? x)
+    (and (exact-integer? x) (>= x 0)))
 
   (include "kernel8.body.scm")
 
