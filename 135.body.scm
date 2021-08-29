@@ -943,12 +943,9 @@
 ;;; FIXME: this is a prototype of how optional arguments should
 ;;; be handled.
 
+;; FIXME: Simplify the tangles of asserts.
 (define (%make-text-prefix/suffix-proc proc name)
   (case-lambda
-   (()
-    (complain name))
-   ((x)
-    (complain name x))
    ((t1 t2)
     (let ((txt1 (%textual->text t1 name t1 t2))
           (txt2 (%textual->text t2 name t1 t2)))
@@ -957,46 +954,44 @@
     (let* ((txt1 (%textual->text t1 name t1 t2))
            (txt2 (%textual->text t2 name t1 t2))
            (n1 (%text-length txt1)))
-      (if (and (exact-integer? start1)
-               (<= 0 start1 n1))
-          (proc txt1 txt2 start1 n1 0 (%text-length txt2))
-          (complain name t1 t2 start1))))
+      (assert (exact-integer? start1) name "illegal argument" start1)
+      (assert (<= 0 start1 n1) name "start1 out of range" start1 txt1)
+      (proc txt1 txt2 start1 n1 0 (%text-length txt2))))
    ((t1 t2 start1 end1)
     (let* ((txt1 (%textual->text t1 name t1 t2))
            (txt2 (%textual->text t2 name t1 t2))
            (n1 (%text-length txt1)))
-      (if (and (exact-integer? start1)
-               (exact-integer? end1)
-               (<= 0 start1 end1 n1))
-          (proc txt1 txt2 start1 end1 0 (%text-length txt2))
-          (complain name t1 t2 start1 end1))))
+      (assert (exact-integer? start1) name "illegal argument" start1)
+      (assert (exact-integer? end1) name "illegal argument" end1)
+      (assert (<= 0 start1 end1 n1)
+        name "start1/end1 out of range" start1 end1 txt1)
+      (proc txt1 txt2 start1 end1 0 (%text-length txt2))))
    ((t1 t2 start1 end1 start2)
     (let* ((txt1 (%textual->text t1 name t1 t2))
            (txt2 (%textual->text t2 name t1 t2))
            (n1 (%text-length txt1))
            (n2 (%text-length txt2)))
-      (if (and (exact-integer? start1)
-               (exact-integer? end1)
-               (exact-integer? start2)
-               (<= 0 start1 end1 n1)
-               (<= 0 start2 n2))
-          (proc txt1 txt2 start1 end1 start2 n2)
-          (complain name t1 t2 start1 end1 start2))))
+      (assert (exact-integer? start1) name "illegal argument" start1)
+      (assert (exact-integer? end1) name "illegal argument" end1)
+      (assert (<= 0 start1 end1 n1)
+        name "start1/end1 out of range" start1 end1 txt1)
+      (assert (exact-integer? start2) name "illegal argument" start2)
+      (assert (<= 0 start2 n2) name "start2 out of range" start2 txt2)
+      (proc txt1 txt2 start1 end1 start2 n2)))
    ((t1 t2 start1 end1 start2 end2)
     (let* ((txt1 (%textual->text t1 name t1 t2))
            (txt2 (%textual->text t2 name t1 t2))
            (n1 (%text-length txt1))
            (n2 (%text-length txt2)))
-      (if (and (exact-integer? start1)
-               (exact-integer? end1)
-               (exact-integer? start2)
-               (exact-integer? end2)
-               (<= 0 start1 end1 n1)
-               (<= 0 start2 end2 n2))
-          (proc txt1 txt2 start1 end1 start2 end2)
-          (complain name t1 t2 start1 end1 start2 end2))))
-   ((t1 t2 start1 end1 start2 end2 oops . rest)
-    (apply complain name t1 t2 start1 end1 start2 end2 oops rest))))
+      (assert (exact-integer? start1) name "illegal argument" start1)
+      (assert (exact-integer? end1) name "illegal argument" end1)
+      (assert (<= 0 start1 end1 n1)
+        name "start1/end1 out of range" start1 end1 txt1)
+      (assert (exact-integer? start2) name "illegal argument" start2)
+      (assert (exact-integer? end2) name "illegal argument" end2)
+      (assert (<= 0 start2 end2 n2)
+        name "start2/end2 out of range" start2 end2 txt2)
+      (proc txt1 txt2 start1 end1 start2 end2)))))
 
 (: textual-prefix-length
    (textual textual #!optional integer integer integer integer
@@ -1059,7 +1054,6 @@
          (start1 (- end1 k)))
     (let loop ((i (- end1 1))
                (j (- end2 1)))
-      (cond ((< i start1) k)
             ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
              (loop (- i 1) (- j 1)))
             (else (- end1 i 1))))))
@@ -1084,6 +1078,7 @@
 
 ;;; Searching
 
+;; FIXME: Better optionals handling.
 (: textual-index
    (textual (char -> boolean) #!optional integer integer
      -> (or integer false)))
@@ -1092,19 +1087,20 @@
         (end (if (or (null? rest) (null? (cdr rest)))
                  (%text-length txt)
                  (car (cdr rest)))))
-    (if (and (procedure? pred)
-             (exact-integer? start)
-             (exact-integer? end)
-             (<= 0 start end (%text-length txt)))
-        (let loop ((i start))
-          (cond ((= i end)
-                 #f)
-                ((pred (%text-ref txt i))
-                 i)
-                (else
-                 (loop (+ i 1)))))
-        (apply complain 'textual-index txt pred rest))))
+    (assert (procedure? pred) 'textual-index "illegal argument" pred)
+    (assert (exact-integer? start) 'textual-index "illegal argument" start)
+    (assert (exact-integer? end) 'textual-index "illegal argument" end)
+    (assert (<= 0 start end (%text-length txt))
+      'textual-index "start/end out of range" start end txt)
+    (let loop ((i start))
+      (cond ((= i end)
+             #f)
+            ((pred (%text-ref txt i))
+             i)
+            (else
+             (loop (+ i 1)))))))
 
+;; FIXME: Better optionals handling.
 (: textual-index-right
    (textual (char -> boolean) #!optional integer integer
      -> (or integer false)))
@@ -1113,18 +1109,19 @@
         (end (if (or (null? rest) (null? (cdr rest)))
                  (%text-length txt)
                  (car (cdr rest)))))
-    (if (and (procedure? pred)
-             (exact-integer? start)
-             (exact-integer? end)
-             (<= 0 start end (%text-length txt)))
-        (let loop ((i (- end 1)))
-          (cond ((< i start)
-                 #f)
-                ((pred (%text-ref txt i))
-                 i)
-                (else
-                 (loop (- i 1)))))
-        (apply complain 'textual-index-right txt pred rest))))
+    (assert (procedure? pred) 'textual-index "illegal argument" pred)
+    (assert (exact-integer? start) 'textual-index "illegal argument" start)
+    (assert (exact-integer? end) 'textual-index "illegal argument" end)
+    (assert (<= 0 start end (%text-length txt))
+      'textual-index "start/end out of range" start end txt)
+    (let loop ((i (- end 1)))
+      (cond ((< i start)
+             #f)
+            ((pred (%text-ref txt i))
+             i)
+            (else
+             (loop (- i 1)))))
+    (apply complain 'textual-index-right txt pred rest)))
 
 (: textual-skip
    (textual (char -> boolean) #!optional integer integer
@@ -1138,6 +1135,7 @@
 (define (textual-skip-right txt pred . rest)
   (apply textual-index-right txt (lambda (x) (not (pred x))) rest))
 
+;; FIXME: Use case-lambda.
 (: textual-contains
    (textual textual #!optional integer integer integer integer
      -> (or integer false)))
@@ -1153,15 +1151,15 @@
          (rest (if (null? rest) rest (cdr rest)))
          (end2 (if (null? rest) (%text-length txt2) (car rest)))
          (rest (if (null? rest) rest (cdr rest))))
-    (if (and (null? rest)
-             (exact-integer? start1)
-             (exact-integer? end1)
-             (exact-integer? start2)
-             (exact-integer? end2)
-             (<= 0 start1 end1 (%text-length txt1))
-             (<= 0 start2 end2 (%text-length txt2)))
-        (%textual-contains txt1 txt2 start1 end1 start2 end2)
-        (apply complain 'textual-contains t1 t2 rest0))))
+    (assert (exact-integer? start1) 'textual-contains "illegal argument" start1)
+    (assert (exact-integer? end1) 'textual-contains "illegal argument" end1)
+    (assert (<= 0 start1 end1 (%text-length txt1))
+      'textual-contains "start1/end1 out of range" start1 end1 txt1)
+    (assert (exact-integer? start2) 'textual-contains "illegal argument" start2)
+    (assert (exact-integer? end2) 'textual-contains "illegal argument" end2)
+    (assert (<= 0 start2 end2 (%text-length txt2))
+      'textual-contains "start2/end2 out of range" start2 end2 txt2)
+    (%textual-contains txt1 txt2 start1 end1 start2 end2)))
 
 ;;; No checking needed here.
 ;;;
@@ -1563,29 +1561,31 @@
    ((textuals delimiter)
     (textual-join textuals delimiter 'infix))
    ((textuals delimiter grammar)
+    (assert (pair-or-null? textuals) 'textual-join "illegal argument" textuals)
+    (assert (textual? delimiter) 'textual-join "illegal argument" delimiter)
+    (assert (memq grammar '(infix strict-infix prefix suffix))
+      'textual-join "invalid grammar argument" grammar)
     (let* ((texts (map (lambda (t) (%textual->text t 'textual-join textuals))
                        textuals))
            (delimiter (%textual->text delimiter
                                       'textual-join textuals delimiter)))
-      (if (memq grammar '(infix strict-infix prefix suffix))
-          (if (null? texts)
-              (case grammar
-                ((strict-infix)
-                 (complain 'textual-join textuals delimiter grammar))
-                (else (text)))
-              (let loop ((rtxts (reverse texts))
-                         (texts (if (eq? grammar 'suffix)
-                                    (list delimiter)
-                                    '())))
-                (cond ((null? rtxts)
-                       (let ((texts (if (eq? grammar 'prefix)
-                                        texts
-                                        (cdr texts))))
-                         (textual-concatenate texts)))
-                      (else
-                       (loop (cdr rtxts)
-                             (cons delimiter (cons (car rtxts) texts)))))))
-          (complain 'textual-join textuals delimiter grammar))))))                
+      (if (null? texts)
+          (case grammar
+            ((strict-infix)
+             (complain 'textual-join textuals delimiter grammar))
+            (else (text)))
+          (let loop ((rtxts (reverse texts))
+                     (texts (if (eq? grammar 'suffix)
+                                (list delimiter)
+                                '())))
+            (cond ((null? rtxts)
+                   (let ((texts (if (eq? grammar 'prefix)
+                                    texts
+                                    (cdr texts))))
+                     (textual-concatenate texts)))
+                  (else
+                   (loop (cdr rtxts)
+                         (cons delimiter (cons (car rtxts) texts)))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1593,26 +1593,24 @@
 
 (: textual-fold (procedure * textual #!optional integer integer -> *))
 (define-textual-start-end (textual-fold kons knil txt start end)
-  (if (procedure? kons)
-      (let loop ((knil knil)
-                 (i start))
-        (if (< i end)
-            (loop (kons (%text-ref txt i) knil)
-                  (+ i 1))
-            knil))
-      (complain 'textual-fold kons knil txt start end)))
+  (assert (procedure? kons) 'textual-fold "illegal argument" kons)
+  (let loop ((knil knil)
+             (i start))
+    (if (< i end)
+        (loop (kons (%text-ref txt i) knil)
+              (+ i 1))
+        knil)))
 
 (: textual-fold-right
    (procedure * textual #!optional integer integer -> *))
 (define-textual-start-end (textual-fold-right kons knil txt start end)
-  (if (procedure? kons)
-      (let loop ((knil knil)
-                 (i (- end 1)))
-        (if (>= i start)
-            (loop (kons (%text-ref txt i) knil)
-                  (- i 1))
-            knil))
-      (complain 'textual-fold-right kons knil txt start end)))
+  (assert (procedure? kons) 'textual-fold "illegal argument" kons)
+  (let loop ((knil knil)
+             (i (- end 1)))
+    (if (>= i start)
+        (loop (kons (%text-ref txt i) knil)
+              (- i 1))
+        knil)))
 
 (: textual-map
    ((#!rest char -> (or char string text)) textual #!rest textual
@@ -1620,70 +1618,68 @@
 (define textual-map
   (case-lambda
    ((proc txt)
+    (assert (procedure? proc) 'textual-map "illegal argument" proc)
     (%textual-map1 proc txt))
    ((proc txt1 txt2 . rest)
+    (assert (procedure? proc) 'textual-map "illegal argument" proc)
     (%textual-mapn proc (cons txt1 (cons txt2 rest))))))
 
 (: %textual-map1 ((char -> (or char string text)) textual -> text))
 (define (%textual-map1 proc txt)
   (let ((txt (%textual->text txt 'textual-map proc txt)))
-    (if (procedure? proc)
-        (let ((n (%text-length txt)))
-          (let loop ((i 0)
-                     (pieces '())
-                     (chars '())
-                     (k 0))
-            (cond ((= i n)
-                   (textual-concatenate
-                    (reverse (%text-map-pieces pieces chars))))
-                  ((>= k N)
-                   (loop i
-                         (%text-map-pieces pieces chars)
-                         '()
-                         (remainder k N)))
-                  (else
-                   (let ((x (proc (%text-ref txt i))))
-                     (loop (+ i 1)
-                           pieces
-                           (cons x chars)
-                           (+ k (cond ((char? x) 1)
-                                      ((string? x) (string-length x))
-                                      ((text? x) (%text-length x))
-                                      (else
-                                       (%textual-map-bad-result proc x))))))))))
-        (complain 'textual-map proc txt))))
+    (let ((n (%text-length txt)))
+      (let loop ((i 0)
+                 (pieces '())
+                 (chars '())
+                 (k 0))
+        (cond ((= i n)
+               (textual-concatenate
+                (reverse (%text-map-pieces pieces chars))))
+              ((>= k N)
+               (loop i
+                     (%text-map-pieces pieces chars)
+                     '()
+                     (remainder k N)))
+              (else
+               (let ((x (proc (%text-ref txt i))))
+                 (loop (+ i 1)
+                       pieces
+                       (cons x chars)
+                       (+ k (cond ((char? x) 1)
+                                  ((string? x) (string-length x))
+                                  ((text? x) (%text-length x))
+                                  (else
+                                   (%textual-map-bad-result proc x))))))))))))
 
 (: %textual-mapn
    ((#!rest char -> (or char string text)) (list-of textual) -> text))
 (define (%textual-mapn proc textuals)
-  (if (procedure? proc)
-      (let* ((texts (map (lambda (txt)
-                           (%textual->text txt 'textual-map textuals))
-                         textuals))
-             (n (apply min (map %text-length texts))))
-        (let loop ((i 0)
-                   (pieces '())
-                   (chars '())
-                   (k 0))
-          (cond ((= i n)
-                 (textual-concatenate
-                  (reverse (%text-map-pieces pieces chars))))
-                ((>= k N)
-                 (loop i
-                       (%text-map-pieces pieces chars)
-                       '()
-                       (remainder k N)))
-                (else
-                 (let ((x (apply proc (%fetch-all texts i))))
-                   (loop (+ i 1)
-                         pieces
-                         (cons x chars)
-                         (+ k (cond ((char? x) 1)
-                                    ((string? x) (string-length x))
-                                    ((text? x) (%text-length x))
-                                    (else
-                                     (%textual-map-bad-result proc x))))))))))
-      (complain 'textual-map proc textuals)))
+  (let* ((texts (map (lambda (txt)
+                       (%textual->text txt 'textual-map textuals))
+                     textuals))
+         (n (apply min (map %text-length texts))))
+    (let loop ((i 0)
+               (pieces '())
+               (chars '())
+               (k 0))
+      (cond ((= i n)
+             (textual-concatenate
+              (reverse (%text-map-pieces pieces chars))))
+            ((>= k N)
+             (loop i
+                   (%text-map-pieces pieces chars)
+                   '()
+                   (remainder k N)))
+            (else
+             (let ((x (apply proc (%fetch-all texts i))))
+               (loop (+ i 1)
+                     pieces
+                     (cons x chars)
+                     (+ k (cond ((char? x) 1)
+                                ((string? x) (string-length x))
+                                ((text? x) (%text-length x))
+                                (else
+                                 (%textual-map-bad-result proc x)))))))))))
 
 ;; FIXME: Misleading error message.
 (define (%textual-map-bad-result proc x)
@@ -1729,34 +1725,33 @@
 (define textual-for-each
   (case-lambda
    ((proc txt)
+    (assert (procedure? proc) 'textual-for-each "illegal argument" proc)
     (%textual-for-each1 proc txt))
    ((proc txt1 txt2 . rest)
+    (assert (procedure? proc) 'textual-for-each "illegal argument" proc)
     (%textual-for-eachn proc (cons txt1 (cons txt2 rest))))))
 
 (: textual-for-each1 ((char -> *) textual -> undefined))
 (define (%textual-for-each1 proc txt)
-  (let ((txt (%textual->text txt 'textual-for-each proc txt)))
-    (if (procedure? proc)
-        (let ((n (%text-length txt)))
-          (let loop ((i 0))
-            (if (< i n)
-                (begin (proc (%text-ref txt i))
-                       (loop (+ i 1))))))
-        (complain 'textual-for-each proc txt))))
+  (let* ((txt (%textual->text txt 'textual-for-each proc txt))
+         (n (%text-length txt)))
+    (let loop ((i 0))
+      (if (< i n)
+          (begin (proc (%text-ref txt i))
+                 (loop (+ i 1)))))))
 
 (: textual-for-eachn ((#!rest char -> *) (list-of textual) -> undefined))
 (define (%textual-for-eachn proc textuals)
-  (if (procedure? proc)
-      (let* ((texts (map (lambda (txt)
-                           (%textual->text txt 'textual-map textuals))
-                         textuals))
-             (n (apply min (map %text-length texts))))
-        (let loop ((i 0))
-          (if (< i n)
-              (begin (apply proc (%fetch-all texts i))
-                     (loop (+ i 1))))))
-      (complain 'textual-for-each proc textuals)))
+  (let* ((texts (map (lambda (txt)
+                       (%textual->text txt 'textual-map textuals))
+                     textuals))
+         (n (apply min (map %text-length texts))))
+    (let loop ((i 0))
+      (if (< i n)
+          (begin (apply proc (%fetch-all texts i))
+                 (loop (+ i 1)))))))
 
+;; FIXME: Rewrite.
 (: %fetch-all ((list-of text) integer -> (list-of char)))
 (define (%fetch-all texts i)
   (if (null? texts)
@@ -1770,45 +1765,46 @@
    ((integer -> (or char string text)) textual #!optional integer integer
      -> text))
 (define-textual-start-end (textual-map-index proc txt start end)
-  (if (procedure? proc)
-      (let ((n end))
-        (let loop ((i start)
-                   (pieces '())
-                   (chars '())
-                   (k 0))
-          (cond ((= i n)
-                 (textual-concatenate
-                  (reverse (%text-map-pieces pieces chars))))
-                ((>= k N)
-                 (loop i
-                       (%text-map-pieces pieces chars)
-                       '()
-                       (remainder k N)))
-                (else
-                 (let ((x (proc i)))
-                   (loop (+ i 1)
-                         pieces
-                         (cons x chars)
-                         (+ k (cond ((char? x) 1)
-                                    ((string? x) (string-length x))
-                                    ((text? x) (%text-length x))
-                                    (else
-                                     (%textual-map-bad-result proc x))))))))))
-      (complain 'textual-map-index proc txt)))
+  (assert (procedure? proc) 'textual-map-index "illegal argument" proc)
+  (let ((n end))
+    (let loop ((i start)
+               (pieces '())
+               (chars '())
+               (k 0))
+      (cond ((= i n)
+             (textual-concatenate
+              (reverse (%text-map-pieces pieces chars))))
+            ((>= k N)
+             (loop i
+                   (%text-map-pieces pieces chars)
+                   '()
+                   (remainder k N)))
+            (else
+             (let ((x (proc i)))
+               (loop (+ i 1)
+                     pieces
+                     (cons x chars)
+                     (+ k (cond ((char? x) 1)
+                                ((string? x) (string-length x))
+                                ((text? x) (%text-length x))
+                                (else
+                                 ;; FIXME: Copy-paste disease (fix name).
+                                 (%textual-map-bad-result proc x)))))))))))
 
 ;;; FIXME: there's no reason to convert a string to a text here
 
+;; FIXME: Remove unneeded binding?
 (: textual-for-each-index
    ((integer -> *) textual #!optional integer integer -> undefined))
 (define-textual-start-end (textual-for-each-index proc txt start end)
-  (if (procedure? proc)
-      (let ((n end))
-        (let loop ((i start))
-          (if (< i n)
-              (begin (proc i)
-                     (loop (+ i 1))))))
-      (complain 'textual-for-each-index proc txt)))
+  (assert (procedure? proc) 'textual-for-each-index "illegal argument" proc)
+  (let ((n end))
+    (let loop ((i start))
+      (if (< i n)
+          (begin (proc i)
+                 (loop (+ i 1)))))))
 
+;; FIXME: Better optionals handling.
 (: textual-count
    (textual (char -> boolean) #!optional integer integer -> integer))
 (define-textual (textual-count txt pred . rest)
@@ -1816,25 +1812,22 @@
         (end (if (or (null? rest) (null? (cdr rest)))
                  (%text-length txt)
                  (car (cdr rest)))))
-    (if (and (procedure? pred)
-             (or (null? rest) (null? (cdr rest)) (null? (cdr (cdr rest))))
-             (exact-integer? start)
-             (exact-integer? end)
-             (<= 0 start end (%text-length txt)))
-        (textual-fold (lambda (c n)
-                        (if (pred c)
-                            (+ n 1)
-                            n))
-                      0 txt start end)
-        (complain 'textual-count txt pred start end))))
+    (assert (procedure? pred) 'textual-count "illegal argument" pred)
+    (assert (exact-integer? start) 'textual-count "illegal argument" start)
+    (assert (exact-integer? end) 'textual-count "illegal argument" end)
+    (assert (<= 0 start end (%text-length txt))
+      'textual-count "start/end out of range" start end txt)
+    (textual-fold (lambda (c n)
+                    (if (pred c)
+                        (+ n 1)
+                        n))
+                  0 txt start end)))
 
 (: textual-filter
    ((char -> boolean) textual #!optional integer integer -> text))
 (define-textual-start-end (textual-filter pred txt start end)
-  (if (procedure? pred)
-      (textual-map (lambda (c) (if (pred c) c ""))
-                   (subtext txt start end))
-      (complain 'textual-filter pred txt start end)))
+  (assert (procedure? pred) 'textual-filter "illegal argument" pred)
+  (textual-map (lambda (c) (if (pred c) c "")) (subtext txt start end)))
 
 ;;; FIXME: checks arguments twice
 
