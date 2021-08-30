@@ -495,7 +495,6 @@
    ((bv start)
     (assert (bytevector? bv) 'utf16le->text "illegal argument" bv)
     (assert (exact-natural? start) 'utf16le->text "illegal argument" start)
-    (assert (exact-natural? end) 'utf16le->text "illegal argument" end)
     (%utf16->text bv start (bytevector-length bv) 'little))
    ((bv start end)
     (assert (bytevector? bv) 'utf16le->text "illegal argument" bv)
@@ -1054,9 +1053,10 @@
          (start1 (- end1 k)))
     (let loop ((i (- end1 1))
                (j (- end2 1)))
+      (cond ((= i end1) k)
             ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
              (loop (- i 1) (- j 1)))
-            (else (- end1 i 1)))))
+            (else (- end1 i 1))))))
 
 (: %text-prefix?
    (text text integer integer integer integer -> boolean))
