@@ -345,11 +345,17 @@
     (assert (exact-natural? end) 'string->text "illegal argument" end)
     (%string->text (substring s start end)))))
 
-;;; FIXME: Optimize these.
-
 (: vector->text ((vector-of char) #!optional start end -> text))
-(define (vector->text v . start/end)
-  (%string->text (list->string (apply vector->list v start/end))))
+(define (vector->text v . args)
+  (let ((lenv (vector-length v)))
+    (let-optionals args ((start 0) (end lenv))
+      (assert (vector? v) 'vector->text "illegal argument" v)
+      (assert (exact-integer? start) 'vector->text "illegal argument" start)
+      (assert (exact-integer? end) 'vector->text "illegal argument" end)
+      (assert (<= 0 start end lenv)
+        'vector->text "start/end out of range" start end v)
+      (text-tabulate (lambda (i) (vector-ref v (+ i start)))
+                     (- end start)))))
 
 (: list->text ((list-of char) #!optional start end -> text))
 (define (list->text chars . start/end)

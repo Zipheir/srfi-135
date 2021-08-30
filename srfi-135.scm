@@ -115,7 +115,7 @@
                        char<=?
                        )
           (only (chicken base) define-record-type error include case-lambda
-                               set-record-printer! assert)
+                               set-record-printer! assert let-optionals)
           (only (chicken io) write-string)
           (chicken type)
           (only (srfi 1) last-pair take)
