@@ -1056,7 +1056,7 @@
                (j (- end2 1)))
             ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
              (loop (- i 1) (- j 1)))
-            (else (- end1 i 1))))))
+            (else (- end1 i 1)))))
 
 (: %text-prefix?
    (text text integer integer integer integer -> boolean))
