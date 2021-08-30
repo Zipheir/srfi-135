@@ -365,11 +365,18 @@
 (define (reverse-list->text chars)
   (string->text (list->string (reverse chars))))
 
-;;; FIXME: if txt is a string, should just call string->utf8
-
 (: textual->utf8 (textual #!optional integer integer -> bytevector))
-(define-textual-start-end (textual->utf8 txt start end)
-  (string->utf8 (textual->string (subtext txt start end))))
+(define (textual->utf8 txt . args)
+  (assert (textual? txt) 'textual->utf8 "illegal argument" txt)
+  (let ((len (textual-length txt)))
+    (let-optionals args ((start 0) (end len))
+      (assert (exact-integer? start) 'textual->utf8 "illegal argument" start)
+      (assert (exact-integer? end) 'textual->utf8 "illegal argument" end)
+      (assert (<= 0 start end len)
+        'textual->utf8 "start/end out of range" start end txt)
+      (if (string? txt)
+          (string->utf8 txt start end)
+          (string->utf8 (textual->string (subtext txt start end)))))))
 
 (: textual->utf16 (textual #!optional integer integer -> bytevector))
 (define-textual-start-end (textual->utf16 txt start end)
