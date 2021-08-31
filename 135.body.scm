@@ -83,7 +83,7 @@
            (let* ((text (%textual->text textual 'f args ... textual start))
                   (n (%text-length text)))
              (assert (exact-natural? start) 'f "illegal argument" start)
-             (assert (< start n) 'f "start out of range" textual start)
+             (assert (<= start n) 'f "start out of range" textual start)
              (f args ... text start n)))
           ((args ... textual start end)
            (let* ((text (%textual->text textual 'f args ... textual start end))
@@ -319,6 +319,8 @@
           ((= i end)
            s)
         (string-set! s (- i start) (%text-ref txt i)))))))
+
+;;; FIXME: Improve these two.
 
 (: textual->vector (textual #!optional start end -> (vector-of char)))
 (define-textual-start-end (textual->vector txt start end)
