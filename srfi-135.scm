@@ -114,13 +114,13 @@
                        string->utf8 make-list exact-integer? vector->list
                        char<=?
                        )
-          (only (chicken base) define-record-type error include case-lambda
+          (only (chicken base) error include case-lambda
                                set-record-printer! assert let-optionals)
           (only (chicken io) write-string)
           (chicken type)
           (only (srfi 1) last-pair take)
           (only (srfi 141) euclidean-remainder)
-          typed-records
+          (typed-records)
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
                                string-titlecase string-copy!)
