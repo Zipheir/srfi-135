@@ -322,15 +322,15 @@
 
 ;;; FIXME: Improve these two.
 
-(: textual->vector (textual #!optional start end -> (vector-of char)))
+(: textual->vector (textual #!optional integer integer -> (vector-of char)))
 (define-textual-start-end (textual->vector txt start end)
   (list->vector (string->list (textual->string (subtext txt start end)))))
 
-(: textual->list (textual #!optional start end -> (list-of char)))
+(: textual->list (textual #!optional integer integer -> (list-of char)))
 (define-textual-start-end (textual->list txt start end)
   (string->list (textual->string (subtext txt start end))))
 
-(: string->text (string #!optional start end -> text))
+(: string->text (string #!optional integer integer -> text))
 (define string->text
   (case-lambda
    ((s)
@@ -346,7 +346,7 @@
       'string->text "start/end out of range" start end)
     (%string->text (substring s start end)))))
 
-(: vector->text ((vector-of char) #!optional start end -> text))
+(: vector->text ((vector-of char) #!optional integer integer -> text))
 (define (vector->text v . args)
   (let ((lenv (vector-length v)))
     (let-optionals args ((start 0) (end lenv))
@@ -358,7 +358,7 @@
       (text-tabulate (lambda (i) (vector-ref v (+ i start)))
                      (- end start)))))
 
-(: list->text ((list-of char) #!optional start end -> text))
+(: list->text ((list-of char) #!optional integer integer -> text))
 (define (list->text chars . start/end)
   (apply string->text (list->string chars) start/end))
 
@@ -1615,7 +1615,7 @@
 ;;; returns that text consed onto the first argument.
 
 (: %text-map-pieces
-   ((list-of texts) (list-of (or char string text)) -> (list-of text)))
+   ((list-of text) (list-of (or char string text)) -> (list-of text)))
 (define (%text-map-pieces texts stuff)
   (let loop ((revstuff stuff)
              (stuff '())
