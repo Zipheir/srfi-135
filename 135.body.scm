@@ -1405,7 +1405,7 @@
 ;;; The string-caser is either string-downcase or string-foldcase.
 ;;; For ASCII, down-casing and fold-casing are the same.
 
-(: %text-downcase (text -> text))
+(: %text-downcase (text (string -> string) -> text))
 (define (%text-downcase txt string-caser)
   (let* ((n (%text-length txt)))
 
@@ -1809,7 +1809,7 @@
                            from to))))))))
 
 (: textual-split
-   (textual textual #!optional symbol integer integer integer
+   (textual textual #!optional symbol (or integer false) integer integer
      -> (list-of text)))
 (define textual-split
   (case-lambda
