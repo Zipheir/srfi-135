@@ -46,7 +46,7 @@
   (k      text.k : integer)
   (chunks text.chunks : (vector-of bytevector)))
 
-(define-type text text)
+(define-type text (struct text-rtd))
 (define-type textual (or text string))
 
 (define (%new-text len i0 chunks)

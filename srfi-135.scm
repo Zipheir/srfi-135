@@ -160,9 +160,6 @@
 
   (include "kernel8.body.scm")
 
-  (define-type text text-rtd)
-  (define-type textual (or text string))
-
   (set-record-printer!
    text-rtd
    (lambda (text port)
