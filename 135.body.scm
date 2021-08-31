@@ -1338,8 +1338,6 @@
         (else
          (complain 'textual-downcase txt))))
 
-;;; FIXME: Provide real implementations of these on texts.
-
 (: textual-foldcase (textual -> text))
 (define (textual-foldcase txt)
   (cond ((string? txt)
