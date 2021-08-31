@@ -6,4 +6,7 @@
  (dependencies r7rs utf8 srfi-141 typed-records)
  (test-dependencies r7rs)
  (components
-  (extension srfi-135)))
+  (extension
+   srfi-135
+   (types-file)
+   (csc-options "-O3" "-d2"))))
