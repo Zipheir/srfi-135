@@ -877,7 +877,7 @@
 ;;; If either text contains non-ASCII characters, both are converted
 ;;; to strings and compared using string-pred.
 
-(: %text-compare
+(: %text-compare-ci
    (text text (integer integer -> boolean) (string string -> boolean)
      -> boolean))
 (define (%text-compare-ci a b make-boolean string-pred)
