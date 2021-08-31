@@ -1012,50 +1012,43 @@
 
 ;;; Searching
 
-;; FIXME: Better optionals handling.
 (: textual-index
    (textual (char -> boolean) #!optional integer integer
      -> (or integer false)))
-(define-textual (textual-index txt pred . rest)
-  (let ((start (if (null? rest) 0 (car rest)))
-        (end (if (or (null? rest) (null? (cdr rest)))
-                 (%text-length txt)
-                 (car (cdr rest)))))
-    (assert (procedure? pred) 'textual-index "illegal argument" pred)
-    (assert (exact-integer? start) 'textual-index "illegal argument" start)
-    (assert (exact-integer? end) 'textual-index "illegal argument" end)
-    (assert (<= 0 start end (%text-length txt))
-      'textual-index "start/end out of range" start end txt)
-    (let loop ((i start))
-      (cond ((= i end)
-             #f)
-            ((pred (%text-ref txt i))
-             i)
-            (else
-             (loop (+ i 1)))))))
+(define (textual-index t pred . args)
+  (let* ((txt (%textual->text t 'textual-index t))
+         (len (%text-length txt)))
+    (let-optionals args ((start 0) (end len))
+      (assert (procedure? pred) 'textual-index "illegal argument" pred)
+      (assert (exact-integer? start)
+        'textual-index "illegal argument" start)
+      (assert (exact-integer? end) 'textual-index "illegal argument" end)
+      (assert (<= 0 start end len)
+        'textual-index "start/end out of range" start end txt)
+      (let loop ((i start))
+         (cond ((= i end) #f)
+               ((pred (%text-ref txt i)) i)
+               (else (loop (+ i 1))))))))
 
-;; FIXME: Better optionals handling.
 (: textual-index-right
    (textual (char -> boolean) #!optional integer integer
      -> (or integer false)))
-(define-textual (textual-index-right txt pred . rest)
-  (let ((start (if (null? rest) 0 (car rest)))
-        (end (if (or (null? rest) (null? (cdr rest)))
-                 (%text-length txt)
-                 (car (cdr rest)))))
-    (assert (procedure? pred) 'textual-index "illegal argument" pred)
-    (assert (exact-integer? start) 'textual-index "illegal argument" start)
-    (assert (exact-integer? end) 'textual-index "illegal argument" end)
-    (assert (<= 0 start end (%text-length txt))
-      'textual-index "start/end out of range" start end txt)
-    (let loop ((i (- end 1)))
-      (cond ((< i start)
-             #f)
-            ((pred (%text-ref txt i))
-             i)
-            (else
-             (loop (- i 1)))))
-    (apply complain 'textual-index-right txt pred rest)))
+(define (textual-index-right t pred . args)
+  (let* ((txt (%textual->text t 'textual-index-right t))
+         (len (%text-length txt)))
+    (let-optionals args ((start 0) (end len))
+      (assert (procedure? pred)
+        'textual-index-right "illegal argument" pred)
+      (assert (exact-integer? start)
+        'textual-index-right "illegal argument" start)
+      (assert (exact-integer? end)
+        'textual-index-right "illegal argument" end)
+      (assert (<= 0 start end len)
+        'textual-index-right "start/end out of range" start end txt)
+      (let loop ((i (- end 1)))
+        (cond ((< i start) #f)
+              ((pred (%text-ref txt i)) i)
+              (else (loop (- i 1))))))))
 
 (: textual-skip
    (textual (char -> boolean) #!optional integer integer
