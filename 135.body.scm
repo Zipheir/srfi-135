@@ -489,7 +489,7 @@
       (assert (exact-integer? end) 'utf16le->text "illegal argument" end)
       (assert (<= 0 start end len)
         'utf16le->text "start/end out of range" start end bv)
-      (%utf16->text bv start end 'big))))
+      (%utf16->text bv start end 'little))))
 
 (: %utf16le->text (bytevector integer integer symbol -> text))
 (define (%utf16->text bv start end endianness)
