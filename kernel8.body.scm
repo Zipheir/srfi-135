@@ -29,31 +29,16 @@
                      (string-length s))
       (complain 'string->text s)))
 
-;;; A portable implementation can't rely on inlining,
-;;; but it can rely on macros.
-
 (define N 128)
 
 (define (length&i0 len i0)
   (+ (* N len) i0))
 
-#;
 (define (length&i0.length k)
   (quotient k N))
 
-#;
 (define (length&i0.i0 k)
   (remainder k N))
-
-(define-syntax length&i0.length
-  (syntax-rules ()
-   ((_ k)
-    (quotient k N))))
-
-(define-syntax length&i0.i0
-  (syntax-rules ()
-   ((_ k)
-    (remainder k N))))
 
 (define-record-type text-rtd
   (new-text0 k chunks)
