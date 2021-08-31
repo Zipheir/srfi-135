@@ -289,14 +289,12 @@
 ;;; when a string is passed instead of a text.
 
 (: textual->text (textual -> text))
-(define (textual->text x . rest)
+(define (textual->text x)
   (cond ((string? x)
          (string->text x))
         ((text? x)
          x)
-        ((null? rest)
-         (error "illegal argument passed to textual->text : " x))
-        (else (apply error rest))))
+        (else (error 'textual->text "illegal argument" x))))
 
 (: textual->string (textual #!optional integer integer -> string))
 (define textual->string
