@@ -987,7 +987,7 @@
          (start1 (- end1 k)))
     (let loop ((i (- end1 1))
                (j (- end2 1)))
-      (cond ((= i end1) k)
+      (cond ((< i start1) k)
             ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
              (loop (- i 1) (- j 1)))
             (else (- end1 i 1))))))
