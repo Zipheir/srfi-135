@@ -76,12 +76,36 @@
                            (subtext t start end))))))
 
 ;;;; Text(ual) ports.
-#|
-(define (%open-input-text t))
+
+(: %open-input-text (text -> input-port))
+(define (%open-input-text t)
+  (let ((idx 0) (end (%text-length t)))
+    (make-input-port
+     (lambda ()      ; read-char
+       (if (= idx end)
+           #!eof
+           (let ((c (%text-ref t idx)))
+             (set! idx (+ idx 1))
+             c)))
+     (lambda () #t)  ; char-ready?
+     void            ; close-port
+     (lambda ()      ; peek-char
+       (if (= idx end) #!eof (%text-ref t idx))))))
 
 (: open-input-textual (textual -> input-port))
 (define (open-input-textual t)
   (cond ((string? t) (open-input-string t))
         ((text? t) (%open-input-text t))
         (else (error 'open-input-textual "illegal argument" t))))
-|#
+
+;;; FIXME: These are just wrappers around string ports.  (chicken port)
+;;; doesn't provide the primitives to do a direct implementation, but
+;;; I'm not sure that would be any more efficient, anyway.
+
+(: open-output-text (-> output-port))
+(define (open-output-text) (open-output-string))
+
+(: get-output-text (output-port -> text))
+(define (get-output-text port)
+  (assert (output-port? port) 'get-output-text "illegal argument" port)
+  (%string->text (get-output-string port)))

@@ -105,6 +105,7 @@
    ;; I/O
 
    text-read-line read-text text-read-lines write-textual
+   open-input-textual open-output-text get-output-text
    )
 
   ;; Don't import non-Unicode-aware base procedures.
@@ -118,10 +119,10 @@
                        string->utf8 make-list exact-integer? vector->list
                        char<=?
                        )
-          (only (chicken base) error include case-lambda
-                               set-record-printer! assert let-optionals)
+          (chicken base)
           (chicken io)
           (chicken type)
+          (chicken port)
           (only (srfi 1) last-pair take unfold)
           (only (srfi 141) euclidean-remainder)
           (typed-records)
