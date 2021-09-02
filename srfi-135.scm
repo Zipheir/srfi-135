@@ -101,6 +101,10 @@
    ;; Replication & splitting
 
    textual-replicate     textual-split
+
+   ;; I/O
+
+   text-read-line read-text text-read-lines write-textual
    )
 
   ;; Don't import non-Unicode-aware base procedures.
@@ -116,9 +120,9 @@
                        )
           (only (chicken base) error include case-lambda
                                set-record-printer! assert let-optionals)
-          (only (chicken io) write-string)
+          (chicken io)
           (chicken type)
-          (only (srfi 1) last-pair take)
+          (only (srfi 1) last-pair take unfold)
           (only (srfi 141) euclidean-remainder)
           (typed-records)
           (utf8)
@@ -167,6 +171,7 @@
      (write-string (textual->string text) port)
      (write-string "»" port)))
 
-  (include "135.body.scm"))
+  (include "135.body.scm")
+  (include "135.io.scm"))
 
 ;;; eof
