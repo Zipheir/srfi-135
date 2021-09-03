@@ -69,7 +69,7 @@
 
 (define chaos2 (string->text "ξαοσ"))
 
-(define beyondBMP (string->text "aÀο𝑁𝄓𝄐"))
+(define beyondBMP (string->text "aÀο𝑁𝄓𝄐z"))
 
 (include "test-predicates.scm")
 (include "test-constructors.scm")
