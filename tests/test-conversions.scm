@@ -140,23 +140,19 @@
   (test-assert (result=? "cba" (reverse-list->text '(#\a #\b #\c))))
 
 
-  (test-assert (equal? '#u8(97 98 99))
-              (textual->utf8 (as-text "abc")))
+  (test '#u8(97 98 99) (textual->utf8 (as-text "abc")))
 
-  (test-assert (equal? '#u8(97 98 99))
-              (textual->utf8 "abc"))
+  (test '#u8(97 98 99) (textual->utf8 "abc"))
 
-  (test-assert (equal? '#u8(97 98 99 121 121 121 122 122 122))
-              (textual->utf8 (as-text "xxxabcyyyzzz") 3))
+  (test '#u8(97 98 99 121 121 121 122 122 122)
+        (textual->utf8 (as-text "xxxabcyyyzzz") 3))
 
-  (test-assert (equal? '#u8(97 98 99 121 121 121 122 122 122))
-              (textual->utf8 "xxxabcyyyzzz" 3))
+  (test '#u8(97 98 99 121 121 121 122 122 122)
+        (textual->utf8 "xxxabcyyyzzz" 3))
 
-  (test-assert (equal? '#u8(97 98 99))
-              (textual->utf8 (as-text "xxxabcyyyzzz") 3 6))
+  (test '#u8(97 98 99) (textual->utf8 (as-text "xxxabcyyyzzz") 3 6))
 
-  (test-assert (equal? '#u8(97 98 99))
-              (textual->utf8 "xxxabcyyyzzz" 3 6))
+  (test '#u8(97 98 99) (textual->utf8 "xxxabcyyyzzz" 3 6))
 
 
   (define assumed-endianness
