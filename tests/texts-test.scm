@@ -55,45 +55,21 @@
 
 ;;; Non-ASCII test texts.
 
-(define ABC
-  (as-text
-   (list->string (map integer->char
-                      '(#x3b1 #x3b2 #x3b3)))))
+(define ABC (string->text "αβγ"))
 
-(define ABCDEF
- (as-text
-  (list->string (map integer->char
-                     '(#x0c0 #x062 #x0c7 #x064 #x0c9 #x066)))))
+(define ABCDEF (string->text "ÀbÇdÉf"))
 
-(define DEFABC
-  (as-text
-   (list->string (map integer->char
-                      '(#x064 #x0c9 #x066 #x0c0 #x062 #x0c7)))))
+(define DEFABC (string->text "dÉfÀbÇ"))
 
-(define eszett (integer->char #xDF))
+(define fuss (string->text "Fuß"))
 
-(define fuss (text #\F #\u eszett))
+(define chaos0 (string->text "ΞΑΟΣ"))
 
-(define chaos0
- (as-text
-  (list->string (map integer->char
-                     '(#x39E #x391 #x39F #x3A3)))))
+(define chaos1 (string->text "ξαος"))
 
-(define chaos1
-  (as-text
-   (list->string (map integer->char
-                      '(#x3BE #x3B1 #x3BF #x3C2)))))
+(define chaos2 (string->text "ξαοσ"))
 
-(define chaos2
-  (as-text
-   (list->string (map integer->char
-                      '(#x3BE #x3B1 #x3BF #x3C3)))))
-
-(define beyondBMP
-  (as-text
-   (list->string
-    (map integer->char
-         '(#x61 #xc0 #x3bf #x1d441 #x1d113 #x1d110 #x7a)))))
+(define beyondBMP (string->text "aÀο𝑁𝄓𝄐"))
 
 (include "test-predicates.scm")
 (include "test-constructors.scm")
