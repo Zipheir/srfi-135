@@ -287,7 +287,7 @@
         (textual->utf8 beyondBMP))
 
   (let ((bv (textual->utf16 beyondBMP)))
-    (test
+    (test-assert
       (or (equal? bv
                   '#u8(254 255 0 97 0 192 3 191
                        216 53 220 65 216 52 221 19 216 52 221 16 0 122))
