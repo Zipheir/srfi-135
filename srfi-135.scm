@@ -102,6 +102,10 @@
 
    textual-replicate     textual-split
 
+   ;; Generators & accumulator
+
+   textual->generator generator->text text-accumulator
+
    ;; I/O
 
    text-read-line read-text text-read-lines write-textual
@@ -173,6 +177,7 @@
      (write-string "»" port)))
 
   (include "135.body.scm")
+  (include "135.gen-acc.scm")
   (include "135.io.scm"))
 
 ;;; eof
