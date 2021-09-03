@@ -1,5 +1,5 @@
 ;;; Copyright (C) William D Clinger (2016).
-;;; 
+;;;
 ;;; Permission is hereby granted, free of charge, to any person
 ;;; obtaining a copy of this software and associated documentation
 ;;; files (the "Software"), to deal in the Software without
@@ -8,10 +8,10 @@
 ;;; sell copies of the Software, and to permit persons to whom the
 ;;; Software is furnished to do so, subject to the following
 ;;; conditions:
-;;; 
+;;;
 ;;; The above copyright notice and this permission notice shall be
 ;;; included in all copies or substantial portions of the Software.
-;;; 
+;;;
 ;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 ;;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
 ;;; OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -19,7 +19,7 @@
 ;;; HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 ;;; WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-;;; OTHER DEALINGS IN THE SOFTWARE. 
+;;; OTHER DEALINGS IN THE SOFTWARE.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -828,7 +828,7 @@
   (or (textual=? beyondBMP
                  (utf16->text (textual->utf16 beyondBMP) 2))
       (fail 'utf16->text))
-  
+
   (or (textual=? beyondBMP (utf16be->text (textual->utf16be beyondBMP)))
       (fail 'utf16be->text))
 
@@ -1186,213 +1186,213 @@
     (fail 'textual-drop-right))
 
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad (string->text "") 0))
     (fail 'textual-pad))
 
-(or (result=? "     " 
+(or (result=? "     "
               (textual-pad (string->text "") 5))
     (fail 'textual-pad))
 
-(or (result=? "  325" 
+(or (result=? "  325"
               (textual-pad (string->text "325") 5))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "71325") 5))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "8871325") 5))
     (fail 'textual-pad))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad (string->text "") 0 #\*))
     (fail 'textual-pad))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad (string->text "") 5 #\*))
     (fail 'textual-pad))
 
-(or (result=? "**325" 
+(or (result=? "**325"
               (textual-pad (string->text "325") 5 #\*))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "71325") 5 #\*))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "8871325") 5 #\*))
     (fail 'textual-pad))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad (string->text "") 0 #\* 0))
     (fail 'textual-pad))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad (string->text "") 5 #\* 0))
     (fail 'textual-pad))
 
-(or (result=? "**325" 
+(or (result=? "**325"
               (textual-pad (string->text "325") 5 #\* 0))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "71325") 5 #\* 0))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "8871325") 5 #\* 0))
     (fail 'textual-pad))
 
-(or (result=? "***25" 
+(or (result=? "***25"
               (textual-pad (string->text "325") 5 #\* 1))
     (fail 'textual-pad))
 
-(or (result=? "*1325" 
+(or (result=? "*1325"
               (textual-pad (string->text "71325") 5 #\* 1))
     (fail 'textual-pad))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad (string->text "8871325") 5 #\* 1))
     (fail 'textual-pad))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad (string->text "") 0 #\* 0 0))
     (fail 'textual-pad))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad (string->text "") 5 #\* 0 0))
     (fail 'textual-pad))
 
-(or (result=? "**325" 
+(or (result=? "**325"
               (textual-pad (string->text "325") 5 #\* 0 3))
     (fail 'textual-pad))
 
-(or (result=? "**713" 
+(or (result=? "**713"
               (textual-pad (string->text "71325") 5 #\* 0 3))
     (fail 'textual-pad))
 
-(or (result=? "**887" 
+(or (result=? "**887"
               (textual-pad (string->text "8871325") 5 #\* 0 3))
     (fail 'textual-pad))
 
-(or (result=? "***25" 
+(or (result=? "***25"
               (textual-pad (string->text "325") 5 #\* 1 3))
     (fail 'textual-pad))
 
-(or (result=? "**132" 
+(or (result=? "**132"
               (textual-pad (string->text "71325") 5 #\* 1 4))
     (fail 'textual-pad))
 
-(or (result=? "*8713" 
+(or (result=? "*8713"
               (textual-pad (string->text "8871325") 5 #\* 1 5))
     (fail 'textual-pad))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad-right (string->text "") 0))
     (fail 'textual-pad-right))
 
-(or (result=? "     " 
+(or (result=? "     "
               (textual-pad-right (string->text "") 5))
     (fail 'textual-pad-right))
 
-(or (result=? "325  " 
+(or (result=? "325  "
               (textual-pad-right (string->text "325") 5))
     (fail 'textual-pad-right))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad-right (string->text "71325") 5))
     (fail 'textual-pad-right))
 
-(or (result=? "88713" 
+(or (result=? "88713"
               (textual-pad-right (string->text "8871325") 5))
     (fail 'textual-pad-right))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad-right (string->text "") 0 #\*))
     (fail 'textual-pad-right))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad-right (string->text "") 5 #\*))
     (fail 'textual-pad-right))
 
-(or (result=? "325**" 
+(or (result=? "325**"
               (textual-pad-right (string->text "325") 5 #\*))
     (fail 'textual-pad-right))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad-right (string->text "71325") 5 #\*))
     (fail 'textual-pad-right))
 
-(or (result=? "88713" 
+(or (result=? "88713"
               (textual-pad-right (string->text "8871325") 5 #\*))
     (fail 'textual-pad-right))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad-right (string->text "") 0 #\* 0))
     (fail 'textual-pad-right))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad-right (string->text "") 5 #\* 0))
     (fail 'textual-pad-right))
 
-(or (result=? "325**" 
+(or (result=? "325**"
               (textual-pad-right (string->text "325") 5 #\* 0))
     (fail 'textual-pad-right))
 
-(or (result=? "71325" 
+(or (result=? "71325"
               (textual-pad-right (string->text "71325") 5 #\* 0))
     (fail 'textual-pad-right))
 
-(or (result=? "88713" 
+(or (result=? "88713"
               (textual-pad-right (string->text "8871325") 5 #\* 0))
     (fail 'textual-pad-right))
 
-(or (result=? "25***" 
+(or (result=? "25***"
               (textual-pad-right (string->text "325") 5 #\* 1))
     (fail 'textual-pad-right))
 
-(or (result=? "1325*" 
+(or (result=? "1325*"
               (textual-pad-right (string->text "71325") 5 #\* 1))
     (fail 'textual-pad-right))
 
-(or (result=? "87132" 
+(or (result=? "87132"
               (textual-pad-right (string->text "8871325") 5 #\* 1))
     (fail 'textual-pad-right))
 
-(or (result=? "" 
+(or (result=? ""
               (textual-pad-right (string->text "") 0 #\* 0 0))
     (fail 'textual-pad-right))
 
-(or (result=? "*****" 
+(or (result=? "*****"
               (textual-pad-right (string->text "") 5 #\* 0 0))
     (fail 'textual-pad-right))
 
-(or (result=? "325**" 
+(or (result=? "325**"
               (textual-pad-right (string->text "325") 5 #\* 0 3))
     (fail 'textual-pad-right))
 
-(or (result=? "713**" 
+(or (result=? "713**"
               (textual-pad-right (string->text "71325") 5 #\* 0 3))
     (fail 'textual-pad-right))
 
-(or (result=? "887**" 
-              
+(or (result=? "887**"
+
               (textual-pad-right (string->text "8871325") 5 #\* 0 3))
     (fail 'textual-pad-right))
 
-(or (result=? "25***" 
+(or (result=? "25***"
               (textual-pad-right (string->text "325") 5 #\* 1 3))
     (fail 'textual-pad-right))
 
-(or (result=? "132**" 
+(or (result=? "132**"
               (textual-pad-right (string->text "71325") 5 #\* 1 4))
     (fail 'textual-pad-right))
 
-(or (result=? "8713*" 
-              
+(or (result=? "8713*"
+
               (textual-pad-right (string->text "8871325") 5 #\* 1 5))
     (fail 'textual-pad-right))
 
@@ -3404,7 +3404,7 @@
     (fail 'textual-append))
 
 (or (result=? "abcdef"
-              
+
               (textual-append (as-text "")
                               (as-text "a")
                               (as-text "bcd")
