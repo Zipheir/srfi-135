@@ -313,9 +313,11 @@
   (test-assert (textual=? beyondBMP
                           (utf16le->text (textual->utf16le beyondBMP))))
 
-  (test-assert (result=? (string-append (string (integer->char #xfeff)) "abc")
+  (test-assert (result=? (string-append (utf8->string '#u8(#xef #xbb #xbf))
+                                        "abc")
                          (utf16be->text '#u8(254 255 0 97 0 98 0 99))))
 
-  (test-assert (result=? (string-append (string (integer->char #xfeff)) "abc")
+  (test-assert (result=? (string-append (utf8->string '#u8(#xef #xbb #xbf))
+                                        "abc")
                          (utf16le->text '#u8(255 254 97 0 98 0 99 0))))
   )

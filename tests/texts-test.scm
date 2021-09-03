@@ -26,7 +26,7 @@
         (chicken base)
         (chicken eval)
         (prefix (only (r7rs) char<=?) r7#)
-        (only (r7rs) bytevector-length bytevector-u8-ref guard)
+        (only (r7rs) bytevector-length bytevector-u8-ref guard utf8->string)
         (test)
         (srfi 135))
 
