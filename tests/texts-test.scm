@@ -1,4 +1,5 @@
 ;;; Copyright (C) William D Clinger (2016).
+;;; Copyright (C) 2020 Wolfgang Corcoran-Mathe.
 ;;;
 ;;; Permission is hereby granted, free of charge, to any person
 ;;; obtaining a copy of this software and associated documentation
@@ -21,44 +22,13 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE.
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;
-;;; Tests for immutable texts.
-;;;
-;;; To run in Larceny, Sagittarius, or Chibi,
-;;; cd to the directory containing this file and incant:
-;;;
-;;;     larceny --r7rs --path . --program texts-test.sps
-;;;     sagittarius -c -r7 -L . texts-test.sps
-;;;     chibi-scheme -I . texts-test.sps
-;;;
-;;; Larceny, Sagittarius, and Chibi will look for the (srfi ???)
-;;; library in the srfi subdirectory.
-
 (import (scheme)
         (chicken base)
         (chicken eval)
         (prefix (only (r7rs) char<=?) r7#)
         (only (r7rs) bytevector-length bytevector-u8-ref guard)
+        (test)
         (srfi 135))
-
-(define (writeln . xs)
-  (for-each display xs)
-  (newline))
-
-(define (fail token . more)
-  (newline)
-  (writeln "Error: test failed: " token)
-  (display " ")
-  (write current-test)
-  (newline)
-  (exit 1)
-  #f)
-
-;;; To display tests that fail, change "(or " to "(OR ".
-;;; To display tests before they are run, uncomment the write below.
-
-(define current-test #f)
 
 (define-syntax OR
   (syntax-rules ()
@@ -83,152 +53,49 @@
   (and (text? txt)
        (textual=? str txt)))
 
-;;; Unicode is a strong motivation for immutable texts, so we ought
-;;; to use at least some non-ASCII strings for testing.
-;;; Some systems would blow up if this file were to contain non-ASCII
-;;; characters, however, so we have to be careful here.
-;;;
-;;; FIXME: need more tests with really high code points
+;;; Non-ASCII test texts.
 
-(cond-expand ((or sagittarius
-                  chibi
-                  full-unicode-strings
-                  full-unicode)
-              (define ABC
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x3b1 #x3b2 #x3b3)))))
-              (define ABCDEF
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x0c0 #x062 #x0c7 #x064 #x0c9 #x066)))))
-              (define DEFABC
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x064 #x0c9 #x066 #x0c0 #x062 #x0c7)))))
-              (define eszett (integer->char #xDF))
-              (define fuss (text #\F #\u eszett))
-              (define chaos0
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x39E #x391 #x39F #x3A3)))))
-              (define chaos1
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x3BE #x3B1 #x3BF #x3C2)))))
-              (define chaos2
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x3BE #x3B1 #x3BF #x3C3)))))
-              (define beyondBMP
-                (as-text
-                 (list->string (map integer->char
-                                    '(#x61 #xc0 #x3bf
-                                           #x1d441 #x1d113 #x1d110 #x7a))))))
-             (else
-              (define ABC (as-text "abc"))
-              (define ABCDEF (as-text "ABCdef"))
-              (define DEFABC (as-text "defabc"))))
+(define ABC
+  (as-text
+   (list->string (map integer->char
+                      '(#x3b1 #x3b2 #x3b3)))))
 
+(define ABCDEF
+ (as-text
+  (list->string (map integer->char
+                     '(#x0c0 #x062 #x0c7 #x064 #x0c9 #x066)))))
 
-;;; Predicates
+(define DEFABC
+  (as-text
+   (list->string (map integer->char
+                      '(#x064 #x0c9 #x066 #x0c0 #x062 #x0c7)))))
 
-(or (text? (text))
-    (fail 'text?))
+(define eszett (integer->char #xDF))
 
-(or (not (text? (string)))
-    (fail 'text?))
+(define fuss (text #\F #\u eszett))
 
-(or (not (text? #\a))
-    (fail 'text?))
+(define chaos0
+ (as-text
+  (list->string (map integer->char
+                     '(#x39E #x391 #x39F #x3A3)))))
 
-(or (textual? (text))
-    (fail 'textual?))
+(define chaos1
+  (as-text
+   (list->string (map integer->char
+                      '(#x3BE #x3B1 #x3BF #x3C2)))))
 
-(or (textual? (string))
-    (fail 'textual?))
+(define chaos2
+  (as-text
+   (list->string (map integer->char
+                      '(#x3BE #x3B1 #x3BF #x3C3)))))
 
-(or (not (textual? #\a))
-    (fail 'textual?))
+(define beyondBMP
+  (as-text
+   (list->string
+    (map integer->char
+         '(#x61 #xc0 #x3bf #x1d441 #x1d113 #x1d110 #x7a)))))
 
-(or (textual-null? (text))
-    (fail 'textual-null?))
-
-(or (not (textual-null? ABC))
-    (fail 'textual-null?))
-
-
-(or (eqv? #t (textual-every (lambda (c) (if (char? c) c #f))
-                            (text)))
-    (fail 'textual-every))
-
-(or (eqv? #\c (textual-every (lambda (c) (if (char? c) c #f))
-                             (as-text "abc")))
-    (fail 'textual-every))
-
-(or (eqv? #f (textual-every (lambda (c) (if (char>? c #\b) c #f))
-                            (as-text "abc")))
-    (fail 'textual-every))
-
-(or (eqv? #\c (textual-every (lambda (c) (if (char>? c #\b) c #f))
-                             (as-text "abc") 2))
-    (fail 'textual-every))
-
-(or (eqv? #t (textual-every (lambda (c) (if (char>? c #\b) c #f))
-                            (as-text "abc") 1 1))
-    (fail 'textual-every))
-
-(or (eqv? #f (textual-any (lambda (c) (if (char? c) c #f))
-                          (text)))
-    (fail 'textual-any))
-
-(or (eqv? #\a (textual-any (lambda (c) (if (char? c) c #f))
-                           (as-text "abc")))
-    (fail 'textual-any))
-
-(or (eqv? #\c (textual-any (lambda (c) (if (char>? c #\b) c #f))
-                           (as-text "abc")))
-    (fail 'textual-any))
-
-(or (eqv? #\c (textual-any (lambda (c) (if (char>? c #\b) c #f))
-                           (as-text "abc") 2))
-    (fail 'textual-any))
-
-(or (eqv? #f (textual-any (lambda (c) (if (char>? c #\b) c #f))
-                          (as-text "abc") 0 2))
-    (fail 'textual-any))
-
-
-(or (eqv? #t (textual-every (lambda (c) (if (char? c) c #f)) ""))
-    (fail 'textual-every))
-
-(or (eqv? #\c (textual-every (lambda (c) (if (char? c) c #f)) "abc"))
-    (fail 'textual-every))
-
-(or (eqv? #f (textual-every (lambda (c) (if (char>? c #\b) c #f)) "abc"))
-    (fail 'textual-every))
-
-(or (eqv? #\c (textual-every (lambda (c) (if (char>? c #\b) c #f)) "abc" 2))
-    (fail 'textual-every))
-
-(or (eqv? #t (textual-every (lambda (c) (if (char>? c #\b) c #f)) "abc" 1 1))
-    (fail 'textual-every))
-
-(or (eqv? #f (textual-any (lambda (c) (if (char? c) c #f)) ""))
-    (fail 'textual-any))
-
-(or (eqv? #\a (textual-any (lambda (c) (if (char? c) c #f)) "abc"))
-    (fail 'textual-any))
-
-(or (eqv? #\c (textual-any (lambda (c) (if (char>? c #\b) c #f)) "abc"))
-    (fail 'textual-any))
-
-(or (eqv? #\c (textual-any (lambda (c) (if (char>? c #\b) c #f)) "abc" 2))
-    (fail 'textual-any))
-
-(or (eqv? #f (textual-any (lambda (c) (if (char>? c #\b) c #f)) "abc" 0 2))
-    (fail 'textual-any))
-
+(include "test-predicates.scm")
 
 ;;; Constructors
 
