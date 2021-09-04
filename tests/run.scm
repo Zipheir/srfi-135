@@ -81,5 +81,6 @@
 (include "test-concatenation.scm")
 (include "test-traversal.scm")
 (include "test-replication.scm")
+(include "test-io.scm")
 
 (test-exit)
