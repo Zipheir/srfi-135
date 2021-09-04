@@ -67,12 +67,6 @@
 
 (define fuss (string->text "Fuß"))
 
-(define chaos0 (string->text "ΞΑΟΣ"))
-
-(define chaos1 (string->text "ξαος"))
-
-(define chaos2 (string->text "ξαοσ"))
-
 (define beyondBMP (string->text "aÀο𝑁𝄓𝄐z"))
 
 (include "test-predicates.scm")

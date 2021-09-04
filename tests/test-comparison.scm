@@ -141,7 +141,4 @@
   (test #t (textual>? (as-text eszett) "z"))
   (test #f (textual>=? "z" (as-text eszett)))
   (test #t (textual>=? (as-text eszett) "z"))
-  (test-assert (textual-ci=? fuss "Fuss"))
-  (test-assert (textual-ci=? fuss "FUSS"))
-  (test-assert (textual-ci=? chaos0 chaos1 chaos2))
   )
