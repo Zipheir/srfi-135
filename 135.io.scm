@@ -21,9 +21,9 @@
   (assert (exact-natural? k) 'text-read-line "illegal argument" k)
   (let-optionals args ((port (current-input-port)))
     (assert (input-port? port) 'text-read-line "illegal argument" port)
-      (if (eof-object? (peek-char port))  ; workaround utf8's read-string
-          #!eof
-          (%string->text (read-string k port)))))
+    (if (eof-object? (peek-char port))  ; workaround utf8's read-string
+        #!eof
+        (%string->text (read-string k port)))))
 
 ;; Analogous to read-lines from (chicken io).
 (: text-read-lines (#!optional input-port integer -> (list-of text)))
