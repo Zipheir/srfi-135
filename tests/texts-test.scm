@@ -76,30 +76,7 @@
 (include "test-constructors.scm")
 (include "test-conversions.scm")
 (include "test-selection.scm")
-
-;;; Replacement
-
-(or (result=? "It's lots of fun to code it up in Scheme."
-              (textual-replace (as-text "It's easy to code it up in Scheme.")
-                               (as-text "lots of fun")
-                               5 9))
-    (fail 'textual-replace))
-
-(or (result=? "The miserable perl programmer endured daily ridicule."
-              (textual-replace "The TCL programmer endured daily ridicule."
-                               (as-text "another miserable perl drone")
-                               4 7 8 22))
-    (fail 'textual-replace))
-
-(or (result=? "It's really easy to code it up in Scheme."
-              (textual-replace (as-text "It's easy to code it up in Scheme.")
-                               "really "
-                               5 5))
-    (fail 'textual-replace))
-
-(or (result=? "Runs in O(1) time." ; for texts (using sample implementations)
-              (textual-replace "Runs in O(n) time." (text #\1) 10 11))
-    (fail 'textual-replace))
+(include "test-replacement.scm")
 
 ;;; Comparison
 ;;;
