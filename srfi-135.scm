@@ -124,7 +124,7 @@
                        char<=?
                        )
           (chicken base)
-          (chicken io)
+          (except (chicken io) write-string)
           (chicken type)
           (chicken port)
           (only (srfi 1) last-pair take unfold)
