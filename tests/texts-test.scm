@@ -82,42 +82,7 @@
 (include "test-comparison.scm")
 (include "test-affixes.scm")
 (include "test-searching.scm")
-
-;;; Case conversion
-
-;;; FIXME: should test some non-ASCII cases here.
-
-(or (result=? "1234STRIKES" (textual-upcase (as-text "1234Strikes")))
-    (fail 'textual-upcase))
-
-(or (result=? "1234STRIKES" (textual-upcase (as-text "1234strikes")))
-    (fail 'textual-upcase))
-
-(or (result=? "1234STRIKES" (textual-upcase (as-text "1234STRIKES")))
-    (fail 'textual-upcase))
-
-(or (result=? "1234strikes" (textual-downcase (as-text "1234Strikes")))
-    (fail 'textual-downcase))
-
-(or (result=? "1234strikes" (textual-downcase (as-text "1234strikes")))
-    (fail 'textual-downcase))
-
-(or (result=? "1234strikes" (textual-downcase (as-text "1234STRIKES")))
-    (fail 'textual-downcase))
-
-(or (result=? "1234strikes" (textual-foldcase (as-text "1234Strikes")))
-    (fail 'textual-foldcase))
-
-(or (result=? "1234strikes" (textual-foldcase (as-text "1234strikes")))
-    (fail 'textual-foldcase))
-
-(or (result=? "1234strikes" (textual-foldcase (as-text "1234STRIKES")))
-    (fail 'textual-foldcase))
-
-(or (result=? "And With Three Strikes You Are Out"
-              (textual-titlecase
-               (as-text "and with THREE STRIKES you are oUT")))
-    (fail 'textual-titlecase))
+(include "test-case-conversion.scm")
 
 ;;; Concatenation
 
