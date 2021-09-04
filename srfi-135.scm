@@ -96,7 +96,7 @@
    textual-map-index     textual-for-each-index
    textual-count
    textual-filter        textual-remove
-;  textual-reverse
+   textual-reverse
 
    ;; Replication & splitting
 
