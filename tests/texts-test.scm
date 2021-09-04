@@ -29,6 +29,7 @@
         (prefix (only (r7rs) char<=?) r7#)
         (only (r7rs) bytevector-length bytevector-u8-ref guard utf8->string)
         (test)
+        (srfi 4)
         (srfi 135))
 
 (define-syntax OR
@@ -87,5 +88,4 @@
 (include "test-traversal.scm")
 (include "test-replication.scm")
 
-(writeln "Done.")
-(exit 0)
+(test-exit)
