@@ -5,7 +5,7 @@
  (license "MIT")
  (maintainer "Wolfgang Corcoran-Mathe")
  (dependencies r7rs utf8 srfi-141 typed-records)
- (test-dependencies r7rs test)
+ (test-dependencies r7rs srfi-158 test)
  (components
   (extension
    srfi-135

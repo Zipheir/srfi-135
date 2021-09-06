@@ -30,6 +30,7 @@
         (only (r7rs) bytevector-length bytevector-u8-ref guard utf8->string)
         (test)
         (srfi 4)
+        (srfi 158)
         (srfi 135))
 
 (define-syntax OR
@@ -82,5 +83,6 @@
 (include "test-traversal.scm")
 (include "test-replication.scm")
 (include "test-io.scm")
+(include "test-gen-accum.scm")
 
 (test-exit)
