@@ -76,25 +76,15 @@
 
 ;;;; Text(ual) ports.
 
-(: %open-input-text (text -> input-port))
-(define (%open-input-text t)
-  (let ((idx 0) (end (%text-length t)))
-    (make-input-port
-     (lambda ()      ; read-char
-       (if (= idx end)
-           #!eof
-           (let ((c (%text-ref t idx)))
-             (set! idx (+ idx 1))
-             c)))
-     (lambda () #t)  ; char-ready?
-     void            ; close-port
-     (lambda ()      ; peek-char
-       (if (= idx end) #!eof (%text-ref t idx))))))
+;;; FIXME: A direct implementation is possible, but it's not just a
+;;; matter of using text-ref; the latter produces Unicode codepoints
+;;; and is thus incompatible with utf8's read-string and with other
+;;; procedures which expect UTF-8.  TODO!
 
 (: open-input-textual (textual -> input-port))
 (define (open-input-textual t)
   (cond ((string? t) (open-input-string t))
-        ((text? t) (%open-input-text t))
+        ((text? t) (open-input-string (textual->string t)))
         (else (error 'open-input-textual "illegal argument" t))))
 
 ;;; FIXME: These are just wrappers around string ports.  (chicken port)
