@@ -25,7 +25,7 @@
 (import (except (scheme) string-ref)
         (chicken base)
         (chicken eval)
-        (only (utf8) string-ref)
+        (utf8)
         (prefix (only (r7rs) char<=?) r7#)
         (only (r7rs) bytevector-length bytevector-u8-ref guard utf8->string)
         (test)
