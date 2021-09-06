@@ -70,7 +70,7 @@
      (assert (<= 0 start end (textual-length t))
        'write-textual "start/end out of range" start end t)
      (if (string? t)
-         (write-string (substring t start end) port)
+         (write-string (substring t start end) #f port)
          (textual-for-each (lambda (c) (write-char c port))
                            (subtext t start end))))))
 
