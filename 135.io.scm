@@ -70,7 +70,7 @@
        'write-textual "start/end out of range" start end t)
      (if (string? t)
          (write-string (substring t start end) #f port)
-         (write-text (subtext t start end) port)))))
+         (%write-text (subtext t start end) port)))))
 
 ;;;; Text(ual) ports.
 
