@@ -133,7 +133,9 @@
           (typed-records)
           (utf8)
           (only (utf8-srfi-13) string-upcase string-downcase
-                               string-titlecase string-copy!)
+                               string-titlecase string-copy!
+                               substring/shared
+                               )
           (only (utf8-case-map) char-downcase-single))
 
   (define-type bytevector u8vector)

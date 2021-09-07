@@ -69,7 +69,7 @@
      (assert (<= 0 start end (textual-length t))
        'write-textual "start/end out of range" start end t)
      (if (string? t)
-         (write-string (substring t start end) #f port)
+         (write-string (substring/shared t start end) #f port)
          (%write-text (subtext t start end) port)))))
 
 ;;;; Text(ual) ports.
