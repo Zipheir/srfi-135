@@ -57,8 +57,7 @@
     ((t port)
      (assert (output-port? port) 'write-textual "illegal argument" port)
      (cond ((string? t) (write-string t (string-length t) port))
-           ((text? t)
-            (textual-for-each (lambda (c) (write-char c port)) t))
+           ((text? t) (%write-text t port))
            (else (error 'write-textual "illegal argument" t))))
     ((t port start) (write-textual t port start (textual-length t)))
     ((t port start end)
@@ -71,8 +70,7 @@
        'write-textual "start/end out of range" start end t)
      (if (string? t)
          (write-string (substring t start end) #f port)
-         (textual-for-each (lambda (c) (write-char c port))
-                           (subtext t start end))))))
+         (write-text (subtext t start end) port)))))
 
 ;;;; Text(ual) ports.
 

@@ -499,3 +499,17 @@
                                                     (cons byte1
                                                           bytes)))))))))
              (loop texts txt j (+ k 1) (+ ti 1) bytes))))))
+
+;;; Primitive output procedure
+
+(: %write-text (text output-port -> void))
+(define (%write-text t port)
+  (let* ((chunks (text.chunks t))
+         (chunks-len (vector-length chunks)))
+    (write-bytevector (vector-ref chunks 0)
+                      port
+                      (length&i0.i0 (text.k t)))
+    (let loop ((i 1))
+      (unless (= i chunks-len)
+        (write-bytevector (vector-ref chunks i) port)
+        (loop (+ i 1))))))

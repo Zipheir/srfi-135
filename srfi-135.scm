@@ -122,6 +122,7 @@
                        bytevector-length bytevector-u8-ref utf8->string
                        string->utf8 make-list exact-integer? vector->list
                        char<=?
+                       write-bytevector
                        )
           (chicken base)
           (except (chicken io) write-string)
