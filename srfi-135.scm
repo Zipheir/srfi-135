@@ -125,6 +125,7 @@
                        write-bytevector
                        )
           (chicken base)
+          (chicken condition)
           (except (chicken io) write-string)
           (chicken type)
           (chicken port)
@@ -140,35 +141,10 @@
 
   (define-type bytevector u8vector)
 
-  (define (assertion-violation procname msg . irritants)
-    (apply error msg irritants))
-
   ;; CHICKEN: We need a Unicode-aware foldcase, so this can't be
   ;; imported from the r7rs egg.
   (define (string-foldcase s) (string-downcase s))
   (define (char-foldcase c) (char-downcase-single c))
-
-  ;; Utility
-  (define (complain name . args)
-    (apply error
-           (string-append (symbol->string name) ": illegal arguments")
-           args))
-
-  (: list->bytevector ((list-of fixnum) -> bytevector))
-  (define (list->bytevector bytes)
-    (let* ((n (length bytes))
-           (bv (make-bytevector n)))
-      (do ((i 0 (+ i 1))
-           (bytes bytes (cdr bytes)))
-          ((= i n))
-        (bytevector-u8-set! bv i (car bytes)))
-      bv))
-
-  (define (pair-or-null? x)
-    (or (null? x) (pair? x)))
-
-  (define (exact-natural? x)
-    (and (exact-integer? x) (>= x 0)))
 
   (include "kernel8.body.scm")
 
@@ -179,6 +155,8 @@
      (write-string (textual->string text) port)
      (write-string "»" port)))
 
+  (include "util.scm")
+  (include "exceptions.scm")
   (include "135.body.scm")
   (include "135.gen-acc.scm")
   (include "135.io.scm"))
