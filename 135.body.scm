@@ -140,6 +140,7 @@
 
 (: text (#!rest char -> text))
 (define (text . chars)
+  (assert-type 'text (every char? chars))
   (string->text (list->string chars)))
 
 ;;; These next two procedures take care to accumulate texts of
@@ -158,8 +159,7 @@
   (assert-type 'text-unfold (procedure? stop?))
   (assert-type 'text-unfold (procedure? mapper))
   (assert-type 'text-unfold (procedure? succ))
-    (assert (procedure? make-final)
-      'text-unfold "illegal argument" make-final)
+    (assert-type 'text-unfold (procedure? make-final))
     (let* ((txt (%textual->text (if (char? base) (text base) base)
                                 'text-unfold
                                 stop? mapper succ seed base make-final))
@@ -179,15 +179,12 @@
                (let* ((texts (if (null? chars)
                                  texts
                                  (cons (reverse-list->text chars) texts)))
-                      (final (make-final seed))
-                      (final (cond ((char? final) (text final))
-                                   ((string? final) (string->text final))
-                                   ((text? final) final)
-                                   (else
-                                    (%bad-final 'text-unfold final)))))
+                      (final (make-final seed)))
+                 (assert-type 'text-unfold (%textual-or-char? final))
                  (textual-concatenate-reverse texts final)))
               (else
                (let ((x (mapper seed)))
+                 (assert-type 'text-unfold (%textual-or-char? x))
                  (cond ((char? x)
                         (loop (+ k 1)
                               texts
@@ -202,11 +199,7 @@
                         (loop (+ k (%text-length x))
                               texts
                               (append (reverse (textual->list x)) chars)
-                              (succ seed)))
-                       (else
-                        (complain 'text-unfold
-                                  stop? mapper succ seed
-                                  base make-final)))))))))))
+                              (succ seed))))))))))))
 
 (: text-unfold-right
    (procedure procedure procedure * #!optional (or char string text) procedure
@@ -218,11 +211,10 @@
    ((stop? mapper succ seed base)
     (text-unfold-right stop? mapper succ seed base (lambda (x) (text))))
    ((stop? mapper succ seed base make-final)
-  (assert-type 'text-unfold (procedure? stop?))
-  (assert-type 'text-unfold (procedure? mapper))
-  (assert-type 'text-unfold (procedure? succ))
-    (assert (procedure? make-final)
-      'text-unfold "illegal argument" make-final)
+  (assert-type 'text-unfold-right (procedure? stop?))
+  (assert-type 'text-unfold-right (procedure? mapper))
+  (assert-type 'text-unfold-right (procedure? succ))
+    (assert-type 'text-unfold-right (procedure? make-final))
     (let* ((txt (%textual->text (if (char? base) (text base) base)
                                 'text-unfold-right
                                 stop? mapper succ seed base make-final))
@@ -241,16 +233,12 @@
                (let* ((texts (if (null? chars)
                                  texts
                                  (cons (list->text chars) texts)))
-                      (final (make-final seed))
-                      (final (cond ((char? final) (text final))
-                                   ((string? final) (string->text final))
-                                   ((text? final) final)
-                                   (else
-                                    (%bad-final 'text-unfold-right
-                                                final)))))
+                      (final (make-final seed)))
+                 (assert-type 'text-unfold (%textual-or-char? final))
                  (textual-concatenate (cons final texts))))
               (else
                (let ((x (mapper seed)))
+                 (assert-type 'text-unfold (%textual-or-char? x))
                  (cond ((char? x)
                         (loop (+ k 1)
                               texts
@@ -265,16 +253,7 @@
                         (loop (+ k (%text-length x))
                               texts
                               (append (textual->list x) chars)
-                              (succ seed)))
-                       (else
-                        (complain 'text-unfold-right
-                                  stop? mapper succ seed
-                                  base make-final)))))))))))
-
-(define (%bad-final name final)
-  (error (string-append (symbol->string name)
-                        " : make-final returned illegal value : ")
-         final))
+                              (succ seed))))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -285,28 +264,31 @@
 
 (: textual->text (textual -> text))
 (define (textual->text x)
+  (assert-type 'textual->text (textual? x))
   (cond ((string? x)
          (string->text x))
         ((text? x)
-         x)
-        (else (error 'textual->text "illegal argument" x))))
+         x)))
 
 (: textual->string (textual #!optional integer integer -> string))
 (define textual->string
   (case-lambda
    ((txt)
+    (assert-type 'textual->string (textual? txt))
     (if (string? txt)
         txt
         (textual->string txt 0 (textual-length txt))))
    ((txt start)
-  (assert-type 'textual-string (exact-natural? start))
+    (assert-type 'textual-string (exact-integer? start))
+    (%check-index 'textual-string txt start)
     (if (string? txt)
         (substring txt start (string-length txt))
         (textual->string txt start (textual-length txt))))
    ((txt start end)
   (assert-type 'textual-string (textual? txt))
-  (assert-type 'textual-string (exact-natural? start))
-  (assert-type 'textual-string (exact-natural? end))
+    (assert-type 'textual-string (exact-integer? start))
+    (assert-type 'textual-string (exact-integer? end))
+    (%check-range 'textual-string txt start end)
     (let* ((txt (%textual->text txt 'textual->string txt start end))
            (n (- end start))
            (s (make-string n)))
@@ -337,8 +319,7 @@
   (assert-type 'string->text (string? s))
   (assert-type 'string->text (exact-integer? start))
   (assert-type 'string->text (exact-integer? end))
-    (assert (<= 0 start end (string-length s))
-      'string->text "start/end out of range" start end)
+    (%check-range 'string->text s start end)
     (%string->text (substring s start end)))))
 
 (: vector->text ((vector-of char) #!optional integer integer -> text))
@@ -348,17 +329,19 @@
   (assert-type 'vector->text (vector? v))
   (assert-type 'vector->text (exact-integer? start))
   (assert-type 'vector->text (exact-integer? end))
-      (assert (<= 0 start end lenv)
-        'vector->text "start/end out of range" start end v)
+      (unless (<= 0 start end lenv)
+        (bounds-exception 'vector->text "invalid range" start end vec))
       (text-tabulate (lambda (i) (vector-ref v (+ i start)))
                      (- end start)))))
 
 (: list->text ((list-of char) #!optional integer integer -> text))
 (define (list->text chars . start/end)
+  (assert-type 'list->text (pair-or-null? chars))
   (apply string->text (list->string chars) start/end))
 
 (: reverse-list->text ((list-of char) -> text))
 (define (reverse-list->text chars)
+  (assert-type 'list->text (pair-or-null? chars))
   (string->text (list->string (reverse chars))))
 
 (: textual->utf8 (textual #!optional integer integer -> bytevector))
@@ -368,8 +351,7 @@
     (let-optionals args ((start 0) (end len))
   (assert-type 'textual->utf8 (exact-integer? start))
   (assert-type 'textual->utf8 (exact-integer? end))
-      (assert (<= 0 start end len)
-        'textual->utf8 "start/end out of range" start end txt)
+      (%check-range 'textual->utf8 txt start end)
       (if (string? txt)
           (string->utf8 txt start end)
           (string->utf8 (textual->string (subtext txt start end)))))))
@@ -441,16 +423,14 @@
     (string->text (utf8->string bv)))
    ((bv start)
   (assert-type 'utf8->text (bytevector? bv))
-  (assert-type 'utf8->text (exact-natural? start))
-    (assert (< start (bytevector-length bv))
-      'utf8->text "start out of range" start bv)
+    (assert-type 'utf8->text (exact-integer? start))
+    (%check-bv-index 'utf8->text bv start)
     (string->text (utf8->string bv start)))
    ((bv start end)
   (assert-type 'utf8->text (bytevector? bv))
-  (assert-type 'utf8->text (exact-natural? start))
-  (assert-type 'utf8->text (exact-natural? end))
-    (assert (<= start end (bytevector-length bv))
-      'utf8->text "start/end out of range" start end bv)
+    (assert-type 'utf8->text (exact-integer? start))
+    (assert-type 'utf8->text (exact-integer? end))
+    (%check-bv-range 'utf8->text bv start end)
     (string->text (utf8->string bv start end)))))
 
 (: utf16->text (bytevector #!optional integer integer -> text))
@@ -460,8 +440,7 @@
     (let-optionals args ((start 0) (end len))
   (assert-type 'utf16->text (exact-integer? start))
   (assert-type 'utf16->text (exact-integer? end))
-      (assert (<= 0 start end len)
-        'utf16->text "start/end out of range" start end bv)
+      (%check-bv-range 'utf16->text bv start end)
       (%utf16->text bv start end #f))))
 
 (: utf16be->text (bytevector #!optional integer integer -> text))
@@ -471,8 +450,7 @@
     (let-optionals args ((start 0) (end len))
   (assert-type 'utf16be->text (exact-integer? start))
   (assert-type 'utf16be->text (exact-integer? end))
-      (assert (<= 0 start end len)
-        'utf16be->text "start/end out of range" start end bv)
+      (%check-bv-range 'utf16be->text bv start end)
       (%utf16->text bv start end 'big))))
 
 (: utf16le->text (bytevector #!optional integer integer -> text))
@@ -482,8 +460,7 @@
     (let-optionals args ((start 0) (end len))
   (assert-type 'utf16le->text (exact-integer? start))
   (assert-type 'utf16le->text (exact-integer? end))
-      (assert (<= 0 start end len)
-        'utf16le->text "start/end out of range" start end bv)
+      (%check-bv-range 'utf16le->text bv start end)
       (%utf16->text bv start end 'little))))
 
 (: %utf16le->text (bytevector integer integer symbol -> text))
@@ -535,6 +512,7 @@
              (+ i 4))))
      start)))
 
+;; FIXME: This should raise a condition with a distinct kind.
 (define (%illegal-utf16 bv i cp . rest)
   (if (null? rest)
       (error "illegal UTF-16: " bv i cp)
@@ -548,21 +526,18 @@
 
 (: textual-length (textual --> integer))
 (define (textual-length txt)
-  (cond ((string? txt)
-         (string-length txt))
-        ((text? txt)
-         (%text-length txt))
-        (else
-         (complain 'textual-length txt))))
+  (assert-type 'textual-length (textual? txt))
+  (if (string? txt)
+      (string-length txt)
+      (%text-length txt)))
 
 (: textual-ref (textual integer -> char))
 (define (textual-ref txt i)
-  (cond ((string? txt)
-         (string-ref txt i))
-        ((text? txt)
-         (%text-ref txt i))
-        (else
-         (complain 'textual-ref txt))))
+  (assert-type 'textual-ref (textual? txt))
+  (assert-type 'textual-ref (exact-integer? i))
+  (if (string? txt)
+      (string-ref txt i)
+      (%text-ref txt i)))
 
 (: subtextual (textual integer integer -> text))
 (define-textual (subtextual txt start end)

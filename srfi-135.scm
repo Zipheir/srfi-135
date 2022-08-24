@@ -129,7 +129,7 @@
           (except (chicken io) write-string)
           (chicken type)
           (chicken port)
-          (only (srfi 1) last-pair take unfold)
+          (only (srfi 1) last-pair take unfold every)
           (only (srfi 141) euclidean-remainder)
           (typed-records)
           (utf8)

@@ -19,3 +19,6 @@
 
   (define (exact-natural? x)
     (and (exact-integer? x) (>= x 0)))
+
+(define (%textual-or-char? x)
+  (or (string? x) (text? x) (char? x)))

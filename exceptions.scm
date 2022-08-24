@@ -42,3 +42,17 @@
                         start
                         end
                         t)))
+
+;;; Same things, but for bytevectors.
+
+(define (%check-bv-index loc bv i)
+  (unless (<= 0 i (bytevector-length bv))
+    (bounds-exception loc "index out of bounds" i bv)))
+
+(define (%check-bv-range loc bv start end)
+  (unless (<= 0 start end (bytevector-length bv))
+    (bounds-exception loc
+                      "invalid range"
+                      start
+                      end
+                      bv)))
