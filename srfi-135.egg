@@ -10,4 +10,6 @@
   (extension
    srfi-135
    (types-file)
-   (csc-options "-O3" "-d2"))))
+   (csc-options "-O3" "-d2"))
+  (extension srfi.135.extensions
+   (types-file))))
