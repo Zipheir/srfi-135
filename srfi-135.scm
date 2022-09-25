@@ -101,15 +101,6 @@
    ;; Replication & splitting
 
    textual-replicate     textual-split
-
-   ;; Generators & accumulator
-
-   textual->generator generator->text text-accumulator
-
-   ;; I/O
-
-   text-read-line read-text text-read-lines write-textual
-   open-input-textual open-output-text get-output-text
    )
 
   ;; Don't import non-Unicode-aware base procedures.
@@ -128,7 +119,6 @@
           (chicken condition)
           (except (chicken io) write-string)
           (chicken type)
-          (chicken port)
           (only (srfi 1) last-pair take unfold every)
           (only (srfi 141) euclidean-remainder)
           (typed-records)
@@ -158,7 +148,6 @@
   (include "util.scm")
   (include "exceptions.scm")
   (include "135.body.scm")
-  (include "135.gen-acc.scm")
-  (include "135.io.scm"))
+  )
 
 ;;; eof
