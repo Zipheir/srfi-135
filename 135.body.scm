@@ -31,16 +31,12 @@
 
 (define-syntax %textual->text
   (syntax-rules ()
-    ((_ x)
-     (assert-type 'unknown (textual? x))
-     (if (string? x)
-         (string->text x)
-         x))
     ((_ x name arg ...)  ; args are ignored
-     (assert-type name (textual? x))
-     (if (string? x)
-         (string->text x)
-         x))))
+     (begin
+      (assert-type name (textual? x))
+      (if (string? x)
+          (string->text x)
+          x)))))
 
 ;;; Several procedures take a first argument that can be either
 ;;; a text or a string.  They can be written as though the first
