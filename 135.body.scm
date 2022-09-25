@@ -509,11 +509,14 @@
              (+ i 4))))
      start)))
 
-;; FIXME: This should raise a condition with a distinct kind.
-(define (%illegal-utf16 bv i cp . rest)
-  (if (null? rest)
-      (error "illegal UTF-16: " bv i cp)
-      (error "illegal UTF-16: " bv i cp (car rest))))
+(define (%illegal-utf16 loc . args)
+  (abort
+   (make-composite-condition
+    (make-property-condition 'exn
+     'location loc
+     'message "illegal UTF-16"
+     'arguments args)
+    (make-property-condition 'encoding))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
