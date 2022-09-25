@@ -327,7 +327,7 @@
   (assert-type 'vector->text (exact-integer? start))
   (assert-type 'vector->text (exact-integer? end))
       (unless (<= 0 start end lenv)
-        (bounds-exception 'vector->text "invalid range" start end vec))
+        (bounds-exception 'vector->text "invalid range" start end v))
       (text-tabulate (lambda (i) (vector-ref v (+ i start)))
                      (- end start)))))
 
