@@ -32,11 +32,11 @@
     (make-property-condition 'assertion))))
 
 (define (%check-index loc t i)
-  (unless (<= 0 i (%textual-length-no-checks t))
+  (unless (<= 0 i (textual-length t))
     (bounds-exception loc "index out of bounds" i t)))
 
 (define (%check-range loc t start end)
-  (unless (<= 0 start end (%textual-length-no-checks t))
+  (unless (<= 0 start end (textual-length t))
     (bounds-exception loc
                       "invalid range"
                       start
