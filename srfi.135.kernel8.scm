@@ -514,8 +514,8 @@
 
 ;;; Primitive output procedure
 
-(: %write-text (text output-port -> void))
-(define (%write-text t port)
+(: write-text (text output-port -> void))
+(define (write-text t port)
   (let* ((chunks (text.chunks t))
          (chunks-len (vector-length chunks)))
     (write-bytevector (vector-ref chunks 0)

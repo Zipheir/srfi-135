@@ -57,7 +57,7 @@
     ((t port)
      (assert (output-port? port) 'write-textual "illegal argument" port)
      (cond ((string? t) (write-string t (string-length t) port))
-           ((text? t) (%write-text t port))
+           ((text? t) (write-text t port))
            (else (error 'write-textual "illegal argument" t))))
     ((t port start) (write-textual t port start (textual-length t)))
     ((t port start end)
@@ -70,7 +70,7 @@
        'write-textual "start/end out of range" start end t)
      (if (string? t)
          (write-string (substring/shared t start end) #f port)
-         (%write-text (subtext t start end) port)))))
+         (write-text (subtext t start end) port)))))
 
 ;;;; Text(ual) ports.
 
