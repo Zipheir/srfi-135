@@ -31,7 +31,11 @@
           (chicken condition)
           (chicken port)
           (chicken type)
+          (only (r7rs) bytevector-length)
+          (chicken type)
           (srfi 1)
+          (only utf8 read-string write-string)
+          (only (utf8-srfi-13) substring/shared)
           (srfi 135))
 
   (define-type text (struct text-rtd))
