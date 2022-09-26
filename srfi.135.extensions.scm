@@ -34,6 +34,9 @@
           (srfi 1)
           (srfi 135))
 
+  (define-type text (struct text-rtd))
+  (define-type textual (or text string))
+
   (include "exceptions.scm")
   (include "135.gen-acc.scm")
   (include "135.io.scm")
