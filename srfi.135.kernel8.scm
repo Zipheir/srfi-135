@@ -25,6 +25,7 @@
   (text? text-length text-ref text-tabulate subtext textual-concatenate
    write-text text-ref/no-checks
    chunk-size
+   string->text-1
    )
 
 (import (except scheme string-length string-ref)
@@ -40,9 +41,9 @@
 
 (include "util.scm")
 
-;;; 1-argument version for internal use
+;;; 1-argument version
 
-(define (%string->text s)
+(define (string->text-1 s)
   (if (string? s)
       (text-tabulate (lambda (i) (string-ref s i))
                      (string-length s))
@@ -324,7 +325,7 @@
          (let ((txt (car texts)))
            (cond ((text? txt) txt)
                  ((string? txt)
-                  (%string->text txt))
+                  (string->text-1 txt))
                  (else (complain 'textual-concatenate texts)))))
         (else
          (let loop ((items (reverse texts))
@@ -343,7 +344,7 @@
                           (if (> k longest-length) txt longest)
                           (max k longest-length))))
                  ((string? (car items))
-                  (loop (cons (%string->text (car items)) (cdr items))
+                  (loop (cons (string->text-1 (car items)) (cdr items))
                         real-texts n longest longest-length))
                  (else
                   (complain 'textual-concatenate texts)))))))

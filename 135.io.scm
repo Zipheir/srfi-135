@@ -23,7 +23,7 @@
     (assert (input-port? port) 'text-read-line "illegal argument" port)
     (if (eof-object? (peek-char port))  ; workaround utf8's read-string
         #!eof
-        (%string->text (read-string k port)))))
+        (string->text-1 (read-string k port)))))
 
 ;; Analogous to read-lines from (chicken io).
 (: text-read-lines (#!optional input-port integer -> (list-of text)))
@@ -95,4 +95,4 @@
 (: get-output-text (output-port -> text))
 (define (get-output-text port)
   (assert (output-port? port) 'get-output-text "illegal argument" port)
-  (%string->text (get-output-string port)))
+  (string->text-1 (get-output-string port)))

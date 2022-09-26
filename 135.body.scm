@@ -304,16 +304,12 @@
 (define-textual-start-end (textual->list txt start end)
   (string->list (textual->string (subtext txt start end))))
 
-(: %string->text (string -> text))
-(define (%string->text s)
-  (text-tabulate (cut string-ref s <>) (string-length s)))
-
 (: string->text (string #!optional integer integer -> text))
 (define string->text
   (case-lambda
    ((s)
   (assert-type 'string->text (string? s))
-    (%string->text s))
+    (string->text-1 s))
    ((s start)
     (string->text s start (string-length s)))
    ((s start end)
@@ -321,7 +317,7 @@
     (assert-type 'string->text (exact-integer? start))
     (assert-type 'string->text (exact-integer? end))
     (%check-range 'string->text s start end)
-    (%string->text (substring s start end)))))
+    (string->text-1 (substring s start end)))))
 
 (: vector->text ((vector-of char) #!optional integer integer -> text))
 (define (vector->text v . args)
