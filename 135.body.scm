@@ -897,14 +897,13 @@
                            (end1 len1)
                            (start2 0)
                            (end2 len2))
-        (assert (exact-integer? start1) name "illegal argument" start1)
-        (assert (exact-integer? end1) name "illegal argument" end1)
-        (assert (<= 0 start1 end1 len1)
-                name "start1/end1 out of range" start1 end1 txt1)
-        (assert (exact-integer? start2) name "illegal argument" start2)
-        (assert (exact-integer? end2) name "illegal argument" end2)
-        (assert (<= 0 start2 end2 len2)
-                name "start2/end2 out of range" start2 end2 txt2)
+        (when (pair? args)
+          (assert-type name (exact-integer? start1))
+          (assert-type name (exact-integer? end1))
+          (assert-type name (exact-integer? start2))
+          (assert-type name (exact-integer? end2))
+          (%check-range name t1 start1 end1)
+          (%check-range name t2 start2 end2))
         (proc txt1 txt2 start1 end1 start2 end2)))))
 
 (: textual-prefix-length
@@ -1001,11 +1000,10 @@
          (len (%text-length txt)))
     (let-optionals args ((start 0) (end len))
       (assert-type 'textual-index (procedure? pred))
-      (assert (exact-integer? start)
-              'textual-index "illegal argument" start)
-      (assert-type 'textual-index (exact-integer? end))
-      (assert (<= 0 start end len)
-              'textual-index "start/end out of range" start end txt)
+      (when (pair? args)
+        (assert-type 'textual-index (exact-integer? start))
+        (assert-type 'textual-index (exact-integer? end))
+        (%check-range 'textual-index t start end))
       (let loop ((i start))
          (cond ((= i end) #f)
                ((pred (%text-ref txt i)) i)
@@ -1018,14 +1016,11 @@
   (let* ((txt (%textual->text t 'textual-index-right t))
          (len (%text-length txt)))
     (let-optionals args ((start 0) (end len))
-      (assert (procedure? pred)
-        'textual-index-right "illegal argument" pred)
-      (assert (exact-integer? start)
-        'textual-index-right "illegal argument" start)
-      (assert (exact-integer? end)
-        'textual-index-right "illegal argument" end)
-      (assert (<= 0 start end len)
-        'textual-index-right "start/end out of range" start end txt)
+      (assert-type 'textual-index-right (procedure? pred))
+      (when (pair? args)
+        (assert-type 'textual-index-right (exact-integer? start))
+        (assert-type 'textual-index-right (exact-integer? end))
+        (%check-range 'textual-index-right t start end))
       (let loop ((i (- end 1)))
         (cond ((< i start) #f)
               ((pred (%text-ref txt i)) i)
@@ -1053,18 +1048,13 @@
                          (end1 (%text-length txt1))
                          (start2 0)
                          (end2 (%text-length txt2)))
-      (assert (exact-integer? start1)
-        'textual-contains "illegal argument" start1)
-      (assert (exact-integer? end1)
-        'textual-contains "illegal argument" end1)
-      (assert (<= 0 start1 end1 (%text-length txt1))
-        'textual-contains "start1/end1 out of range" start1 end1 txt1)
-      (assert (exact-integer? start2)
-        'textual-contains "illegal argument" start2)
-      (assert (exact-integer? end2)
-        'textual-contains "illegal argument" end2)
-      (assert (<= 0 start2 end2 (%text-length txt2))
-        'textual-contains "start2/end2 out of range" start2 end2 txt2)
+      (when (pair? args)
+        (assert-type 'textual-contains (exact-integer? start1))
+        (assert-type 'textual-contains (exact-integer? end1))
+        (assert-type 'textual-contains (exact-integer? start2))
+        (assert-type 'textual-contains (exact-integer? end2))
+        (%check-range 'textual-contains t1 start1 end1)
+        (%check-range 'textual-contains t2 start2 end2))
       (%textual-contains txt1 txt2 start1 end1 start2 end2))))
 
 ;;; No checking needed here.
@@ -1211,13 +1201,14 @@
          (rest (if (null? rest) rest (cdr rest)))
          (end2 (if (null? rest) (%text-length txt2) (car rest)))
          (rest (if (null? rest) rest (cdr rest))))
-    (if (and (null? rest)
-             (exact-integer? start1)
-             (exact-integer? end1)
-             (exact-integer? start2)
-             (exact-integer? end2)
-             (<= 0 start1 end1 (%text-length txt1))
-             (<= 0 start2 end2 (%text-length txt2)))
+    (when (pair? rest0)
+      (assert-type 'textual-contains-right (exact-integer? start1))
+      (assert-type 'textual-contains-right (exact-integer? end1))
+      (assert-type 'textual-contains-right (exact-integer? start2))
+      (assert-type 'textual-contains-right (exact-integer? end2))
+      (%check-range 'textual-contains-right t1 start1 end1)
+      (%check-range 'textual-contains-right t2 start2 end2))
+    (if (null? rest)
         (%textual-contains-right txt1 txt2 start1 end1 start2 end2)
         (apply complain 'textual-contains-right t1 t2 rest0))))
 
@@ -1303,6 +1294,7 @@
 
 (: textual-upcase (textual -> text))
 (define (textual-upcase txt)
+  (assert-type 'textual-upcase (textual? txt))
   (cond ((string? txt)
          (string->text (string-upcase txt)))
         ((text? txt)
@@ -1312,6 +1304,7 @@
 
 (: textual-downcase (textual -> text))
 (define (textual-downcase txt)
+  (assert-type 'textual-downcase (textual? txt))
   (cond ((string? txt)
          (string->text (string-downcase txt)))
         ((text? txt)
@@ -1321,6 +1314,7 @@
 
 (: textual-foldcase (textual -> text))
 (define (textual-foldcase txt)
+  (assert-type 'textual-foldcase (textual? txt))
   (cond ((string? txt)
          (string->text (string-foldcase txt)))
         ((text? txt)
@@ -1330,6 +1324,7 @@
 
 (: textual-titlecase (textual -> text))
 (define (textual-titlecase txt)
+  (assert-type 'textual-titlecase (textual? txt))
   (cond ((string? txt)
          (string->text (string-titlecase txt)))
         ((text? txt)
@@ -1439,6 +1434,7 @@
 
 (: textual-append (#!rest textual -> text))
 (define (textual-append . texts)
+  (assert-type 'textual-append (every textual? texts))
   (textual-concatenate texts))
 
 (: textual-concatenate-reverse
@@ -1446,10 +1442,13 @@
 (define textual-concatenate-reverse
   (case-lambda
    ((texts)
+    (assert-type 'textual-concatenate-reverse (every textual? texts))
     (textual-concatenate (reverse texts)))
    ((texts final-textual)
     (textual-concatenate-reverse (cons final-textual texts)))
    ((texts final-textual end)
+    (assert-type 'textual-concatenate-reverse (every textual? texts))
+    (%check-index 'textual-concatenate-reverse final-textual end)
     (textual-concatenate-reverse texts
                                  (subtext
                                   (%textual->text final-textual
@@ -1467,6 +1466,7 @@
    ((textuals delimiter grammar)
   (assert-type 'textual-join (pair-or-null? textuals))
   (assert-type 'textual-join (textual? delimiter))
+    (assert-type 'textual-join (symbol? grammar))
     (assert (memq grammar '(infix strict-infix prefix suffix))
       'textual-join "invalid grammar argument" grammar)
     (let* ((texts (map (lambda (t) (%textual->text t 'textual-join textuals))
@@ -1528,6 +1528,10 @@
   (assert-type 'textual-map (procedure? proc))
     (%textual-mapn proc (cons txt1 (cons txt2 rest))))))
 
+(: textual-map-valid-element? (* -> boolean))
+(define (textual-map-valid-element? x)
+  (or (char? x) (string? x) (text? x)))
+
 (: %textual-map1 ((char -> (or char string text)) textual -> text))
 (define (%textual-map1 proc txt)
   (let ((txt (%textual->text txt 'textual-map proc txt)))
@@ -1546,14 +1550,14 @@
                      (remainder k N)))
               (else
                (let ((x (proc (%text-ref txt i))))
+                 (assert-type 'textual-map
+                              (textual-map-valid-element? x))
                  (loop (+ i 1)
                        pieces
                        (cons x chars)
                        (+ k (cond ((char? x) 1)
                                   ((string? x) (string-length x))
-                                  ((text? x) (%text-length x))
-                                  (else
-                                   (%textual-map-bad-result proc x))))))))))))
+                                  ((text? x) (%text-length x))))))))))))
 
 (: %textual-mapn
    ((#!rest char -> (or char string text)) (list-of textual) -> text))
@@ -1576,18 +1580,14 @@
                    (remainder k N)))
             (else
              (let ((x (apply proc (%fetch-all texts i))))
+               (assert-type 'textual-map
+                            (textual-map-valid-element? x))
                (loop (+ i 1)
                      pieces
                      (cons x chars)
                      (+ k (cond ((char? x) 1)
                                 ((string? x) (string-length x))
-                                ((text? x) (%text-length x))
-                                (else
-                                 (%textual-map-bad-result proc x)))))))))))
-
-;; FIXME: Misleading error message.
-(define (%textual-map-bad-result proc x)
-  (error "textual-map: proc returned non-character" x))
+                                ((text? x) (%text-length x)))))))))))
 
 ;;; Given a list of texts and a list of mixed characters/strings/texts,
 ;;; in reverse order, converts the second argument into a text and
@@ -1685,15 +1685,14 @@
                    (remainder k N)))
             (else
              (let ((x (proc i)))
+               (assert-type 'textual-map-index
+                            (textual-map-valid-element? x))
                (loop (+ i 1)
                      pieces
                      (cons x chars)
                      (+ k (cond ((char? x) 1)
                                 ((string? x) (string-length x))
-                                ((text? x) (%text-length x))
-                                (else
-                                 ;; FIXME: Copy-paste disease (fix name).
-                                 (%textual-map-bad-result proc x)))))))))))
+                                ((text? x) (%text-length x)))))))))))
 
 ;;; FIXME: there's no reason to convert a string to a text here
 
@@ -1761,12 +1760,10 @@
   (let* ((txt (%textual->text t 'textual-replicate t))
          (len (%text-length txt)))
     (let-optionals args ((start 0) (end len))
-      (assert (exact-integer? start)
-        'textual-replicate "illegal argument" start)
-      (assert (exact-integer? end)
-        'textual-replicate "illegal argument" end)
-      (assert (<= 0 start end len)
-        'textual-replicate "start/end out of range" start end t)
+      (when (pair? args)
+        (assert-type 'textual-replicate (exact-integer? start))
+        (assert-type 'textual-replicate (exact-integer? end))
+        (%check-range 'textual-replicate t start end))
       (%text-replicate (subtext txt start end) from to))))
 
 (define (%text-replicate txt from to)
@@ -1803,6 +1800,8 @@
    ((s0 delimiter grammar limit)
     (define (bad-arguments)
       (complain 'textual-split s0 delimiter grammar limit))
+    (assert-type 'textual-split (symbol? grammar))
+    (assert-type 'textual-split (or (not limit) (exact-integer? limit)))
     (let* ((s (%textual->text s0 'textual-split s0 delimiter grammar limit))
            (delimiter
             (%textual->text delimiter
