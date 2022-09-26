@@ -4,8 +4,8 @@
 ;; than dispatching to string->generator.
 (: textual->generator (textual #!optional integer integer -> procedure))
 (define (textual->generator t . args)
-  (let* ((txt (%textual->text t 'textual->generator t))
-         (len (%text-length txt)))
+  (let* ((txt (textual->text t))
+         (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
       (assert (exact-integer? start)
         'textual->generator "illegal argument" start)
@@ -16,7 +16,7 @@
       (lambda ()
         (if (= start end)
             #!eof
-            (let ((c (%text-ref txt start)))
+            (let ((c (text-ref txt start)))
               (set! start (+ start 1))
               c))))))
 
