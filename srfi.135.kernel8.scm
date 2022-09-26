@@ -35,6 +35,8 @@
 
 (define-type bytevector u8vector)
 
+(include "util.scm")
+
 ;;; 1-argument version for internal use
 
 (define (%string->text s)
