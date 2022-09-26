@@ -33,6 +33,8 @@
         (chicken type)
         typed-records)
 
+(define-type bytevector u8vector)
+
 ;;; 1-argument version for internal use
 
 (define (%string->text s)
