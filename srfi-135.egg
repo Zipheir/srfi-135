@@ -11,5 +11,8 @@
    srfi-135
    (types-file)
    (csc-options "-O3" "-d2"))
+  (extension srfi.135.kernel8
+   (types-file)
+   (csc-options "-O3" "-d0"))
   (extension srfi.135.extensions
    (types-file))))
