@@ -127,7 +127,8 @@
                                string-titlecase string-copy!
                                substring/shared
                                )
-          (only (utf8-case-map) char-downcase-single))
+          (only (utf8-case-map) char-downcase-single)
+          (srfi 135 kernel8))
 
   (define-type bytevector u8vector)
 
@@ -135,8 +136,6 @@
   ;; imported from the r7rs egg.
   (define (string-foldcase s) (string-downcase s))
   (define (char-foldcase c) (char-downcase-single c))
-
-  (include "kernel8.body.scm")
 
   (set-record-printer!
    text-rtd

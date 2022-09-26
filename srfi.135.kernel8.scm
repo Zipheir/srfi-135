@@ -21,6 +21,18 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE. 
 
+(module (srfi 135 kernel8)
+  (text-length text-ref text-tabulate subtext textual-concatenate
+   write-text)
+
+(import (except scheme string-length string-ref)
+        (only r7rs bytevector-length bytevector-u8-ref)
+        (only utf8 string-length string-ref)
+        (chicken base)
+        (chicken condition)
+        (chicken type)
+        typed-records)
+
 ;;; 1-argument version for internal use
 
 (define (%string->text s)
@@ -513,3 +525,5 @@
       (unless (= i chunks-len)
         (write-bytevector (vector-ref chunks i) port)
         (loop (+ i 1))))))
+
+)
