@@ -110,8 +110,8 @@
       (let ((end-1 (- end 1)))
         (let loop ((i start))
           (if (= i end-1)
-              (pred (%text-ref textual i))
-              (and (pred (%text-ref textual i))
+              (pred (text-ref/no-checks textual i))
+              (and (pred (text-ref/no-checks textual i))
                    (loop (+ i 1))))))))
 
 (: textual-any ((char -> *) textual integer integer -> *))
@@ -120,7 +120,7 @@
   (let loop ((i start))
     (if (= i end)
         #f
-        (or (pred (%text-ref textual i))
+        (or (pred (text-ref/no-checks textual i))
             (loop (+ i 1))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -292,7 +292,7 @@
       (do ((i start (+ i 1)))
           ((= i end)
            s)
-        (string-set! s (- i start) (%text-ref txt i)))))))
+        (string-set! s (- i start) (text-ref/no-checks txt i)))))))
 
 ;;; FIXME: Improve these two.
 
@@ -537,7 +537,7 @@
   (assert-type 'textual-ref (exact-integer? i))
   (if (string? txt)
       (string-ref txt i)
-      (%text-ref txt i)))
+      (text-ref/no-checks txt i)))
 
 (: subtextual (textual integer integer -> text))
 (define-textual (subtextual txt start end)
@@ -655,7 +655,7 @@
   (let loop ((i start))
     (cond ((= i end)
            (text))
-          ((pred (%text-ref txt i))
+          ((pred (text-ref/no-checks txt i))
            (loop (+ i 1)))
           (else
            (subtext txt i end)))))
@@ -684,7 +684,7 @@
   (let loop ((i (- end 1)))
     (cond ((< i start)
            (text))
-          ((pred (%text-ref txt i))
+          ((pred (text-ref/no-checks txt i))
            (loop (- i 1)))
           (else
            (subtext txt start (+ i 1))))))
@@ -847,8 +847,8 @@
           (cond ((< na nb) (make-boolean -1 0))
                 ((> na nb) (make-boolean +1 0))
                 (else (make-boolean 0 0)))
-          (let ((ca (%text-ref a i))
-                (cb (%text-ref b i)))
+          (let ((ca (text-ref/no-checks a i))
+                (cb (text-ref/no-checks b i)))
             (cond ((char<? ca cb) (make-boolean -1 0))
                   ((char>? ca cb) (make-boolean +1 0))
                   (else (loop (+ i 1)))))))
@@ -870,8 +870,8 @@
           (cond ((< na nb) (make-boolean -1 0))
                 ((> na nb) (make-boolean +1 0))
                 (else (make-boolean 0 0)))
-          (let ((ca (%text-ref a i))
-                (cb (%text-ref b i)))
+          (let ((ca (text-ref/no-checks a i))
+                (cb (text-ref/no-checks b i)))
             (if (or (char>? ca #\delete)
                     (char>? cb #\delete))
                 (string-pred (textual->string a)
@@ -954,7 +954,7 @@
     (let loop ((i start1)
                (j start2))
       (cond ((= i end1) k)
-            ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
+            ((char=? (text-ref/no-checks txt1 i) (text-ref/no-checks txt2 j))
              (loop (+ i 1) (+ j 1)))
             (else (- i start1))))))
 
@@ -968,7 +968,7 @@
     (let loop ((i (- end1 1))
                (j (- end2 1)))
       (cond ((< i start1) k)
-            ((char=? (%text-ref txt1 i) (%text-ref txt2 j))
+            ((char=? (text-ref/no-checks txt1 i) (text-ref/no-checks txt2 j))
              (loop (- i 1) (- j 1)))
             (else (- end1 i 1))))))
 
@@ -1006,7 +1006,7 @@
         (%check-range 'textual-index t start end))
       (let loop ((i start))
          (cond ((= i end) #f)
-               ((pred (%text-ref txt i)) i)
+               ((pred (text-ref/no-checks txt i)) i)
                (else (loop (+ i 1))))))))
 
 (: textual-index-right
@@ -1023,7 +1023,7 @@
         (%check-range 'textual-index-right t start end))
       (let loop ((i (- end 1)))
         (cond ((< i start) #f)
-              ((pred (%text-ref txt i)) i)
+              ((pred (text-ref/no-checks txt i)) i)
               (else (loop (- i 1))))))))
 
 (: textual-skip
@@ -1342,7 +1342,7 @@
     (define (fastest i)
       (if (= i n)
           txt
-          (let ((c (%text-ref txt i)))
+          (let ((c (text-ref/no-checks txt i)))
             (cond ((char>? c #\delete)
                    (textual-upcase (textual->string txt)))
                   ((char<=? #\a c #\z)
@@ -1365,7 +1365,7 @@
                   (not (null? chars)))
              (fast i (cons (reverse-list->text chars) texts) '()))
             (else
-             (let ((c (%text-ref txt i)))
+             (let ((c (text-ref/no-checks txt i)))
                (cond ((char>? c #\delete)
                       (textual-append (textual-concatenate-reverse texts)
                                       (reverse-list->text chars)
@@ -1390,7 +1390,7 @@
     (define (fastest i)
       (if (= i n)
           txt
-          (let ((c (%text-ref txt i)))
+          (let ((c (text-ref/no-checks txt i)))
             (cond ((char>? c #\delete)
                    (textual-downcase (textual->string txt)))
                   ((char<=? #\A c #\Z)
@@ -1413,7 +1413,7 @@
                   (not (null? chars)))
              (fast i (cons (reverse-list->text chars) texts) '()))
             (else
-             (let ((c (%text-ref txt i)))
+             (let ((c (text-ref/no-checks txt i)))
                (cond ((char>? c #\delete)
                       (textual-append (textual-concatenate-reverse texts)
                                       (reverse-list->text chars)
@@ -1502,7 +1502,7 @@
   (let loop ((knil knil)
              (i start))
     (if (< i end)
-        (loop (kons (%text-ref txt i) knil)
+        (loop (kons (text-ref/no-checks txt i) knil)
               (+ i 1))
         knil)))
 
@@ -1513,7 +1513,7 @@
   (let loop ((knil knil)
              (i (- end 1)))
     (if (>= i start)
-        (loop (kons (%text-ref txt i) knil)
+        (loop (kons (text-ref/no-checks txt i) knil)
               (- i 1))
         knil)))
 
@@ -1550,7 +1550,7 @@
                      '()
                      (remainder k N)))
               (else
-               (let ((x (proc (%text-ref txt i))))
+               (let ((x (proc (text-ref/no-checks txt i))))
                  (assert-type 'textual-map
                               (textual-map-valid-element? x))
                  (loop (+ i 1)
@@ -1642,7 +1642,7 @@
          (n (text-length txt)))
     (let loop ((i 0))
       (if (< i n)
-          (begin (proc (%text-ref txt i))
+          (begin (proc (text-ref/no-checks txt i))
                  (loop (+ i 1)))))))
 
 (: textual-for-eachn ((#!rest char -> *) (list-of textual) -> undefined))
@@ -1661,7 +1661,7 @@
 (define (%fetch-all texts i)
   (if (null? texts)
       '()
-      (cons (%text-ref (car texts) i)
+      (cons (text-ref/no-checks (car texts) i)
             (%fetch-all (cdr texts) i))))
 
 ;;; FIXME: there's no reason to convert a string to a text here
@@ -1747,7 +1747,7 @@
     (do ((i start (+ i 1)))
         ((= i end)
          (string->text s))
-      (string-set! s (- n (- i start) 1) (%text-ref txt i)))))
+      (string-set! s (- n (- i start) 1) (text-ref/no-checks txt i)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

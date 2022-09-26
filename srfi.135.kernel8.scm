@@ -23,7 +23,8 @@
 
 (module (srfi 135 kernel8)
   (text? text-length text-ref text-tabulate subtext textual-concatenate
-   write-text)
+   write-text text-ref/no-checks
+   )
 
 (import (except scheme string-length string-ref)
         (only r7rs bytevector-length bytevector-u8-ref write-bytevector
@@ -99,14 +100,14 @@
           (integer->char (bytevector-u8-ref sj ii))
           (%utf8-ref sj ii)))))
 
-;;; Non-checking versions for internal use.
+;;; Non-checking versions
 
 (: %text-length (text -> integer))
 (define (%text-length txt)
   (length&i0.length (text.k txt)))
 
-(: %text-ref (text integer -> char))
-(define (%text-ref txt i)
+(: text-ref/no-checks (text integer -> char))
+(define (text-ref/no-checks txt i)
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
          (len    (length&i0.length k))
@@ -476,7 +477,7 @@
                       (%new-text n i0 chunks))
                (loop (cdr texts) (car texts) j k 0 bytes)))
           (else
-           (let* ((cp (char->integer (%text-ref txt ti)))
+           (let* ((cp (char->integer (text-ref/no-checks txt ti)))
                   (bytes (cond ((< cp #x0080)
                                 (cons cp bytes))
                                ((< cp #x0800)
