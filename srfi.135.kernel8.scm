@@ -26,7 +26,8 @@
    write-text)
 
 (import (except scheme string-length string-ref)
-        (only r7rs bytevector-length bytevector-u8-ref write-bytevector)
+        (only r7rs bytevector-length bytevector-u8-ref write-bytevector
+                   bytevector-u8-set! make-bytevector make-list)
         (only utf8 string-length string-ref)
         (chicken base)
         (chicken condition)
