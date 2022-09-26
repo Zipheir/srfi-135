@@ -24,6 +24,7 @@
 (module (srfi 135 kernel8)
   (text? text-length text-ref text-tabulate subtext textual-concatenate
    write-text text-ref/no-checks
+   chunk-size
    )
 
 (import (except scheme string-length string-ref)
@@ -47,16 +48,17 @@
                      (string-length s))
       (complain 'string->text s)))
 
-(define N 128)
+(: chunk-size fixnum)
+(define chunk-size 128)
 
 (define (length&i0 len i0)
-  (+ (* N len) i0))
+  (+ (* chunk-size len) i0))
 
 (define (length&i0.length k)
-  (quotient k N))
+  (quotient k chunk-size))
 
 (define (length&i0.i0 k)
-  (remainder k N))
+  (remainder k chunk-size))
 
 (define-record-type text-rtd
   (new-text0 k chunks)
@@ -89,14 +91,14 @@
          (len    (length&i0.length k))
          (i0     (length&i0.i0 k))
          (i+i0   (+ i i0))
-         (j      (quotient i+i0 N))
-         (ii     (remainder i+i0 N)))
+         (j      (quotient i+i0 chunk-size))
+         (ii     (remainder i+i0 chunk-size)))
     (assert (< i len) 'text-ref "index out of range" txt i)
     (let* ((sj (vector-ref chunks j))
            (sjn (bytevector-length sj)))
       (if (if (< j (- (vector-length chunks) 1))
-              (= sjn N)
-              (= sjn (remainder (+ i0 len) N)))
+              (= sjn chunk-size)
+              (= sjn (remainder (+ i0 len) chunk-size)))
           (integer->char (bytevector-u8-ref sj ii))
           (%utf8-ref sj ii)))))
 
@@ -113,13 +115,13 @@
          (len    (length&i0.length k))
          (i0     (length&i0.i0 k))
          (i+i0   (+ i i0))
-         (j      (quotient i+i0 N))
-         (ii     (remainder i+i0 N))
+         (j      (quotient i+i0 chunk-size))
+         (ii     (remainder i+i0 chunk-size))
          (sj     (vector-ref chunks j))
          (sjn    (bytevector-length sj)))
     (if (if (< j (- (vector-length chunks) 1))
-            (= sjn N)
-            (= sjn (remainder (+ i0 len) N)))
+            (= sjn chunk-size)
+            (= sjn (remainder (+ i0 len) chunk-size)))
         (integer->char (bytevector-u8-ref sj ii))
         (%utf8-ref sj ii))))
 
@@ -191,7 +193,7 @@
                            (list->vector
                             (cons (list->bytevector bytes)
                                   chunks))))
-              ((and (= 0 (remainder i N))
+              ((and (= 0 (remainder i chunk-size))
                     (not (null? bytes)))
                (loop i
                      (cons (list->bytevector bytes) chunks)
@@ -270,9 +272,9 @@
          (i+i0   (+ start i0))
          (end+i0 (+ end i0))
          (len+i0 (+ len i0))
-         (jstart (quotient i+i0 N))
-         (jend   (quotient end+i0 N))
-         (jlen   (quotient len N)))
+         (jstart (quotient i+i0 chunk-size))
+         (jend   (quotient end+i0 chunk-size))
+         (jlen   (quotient len chunk-size)))
     (cond ((= start end)
            the-empty-text)
           ((and (= 0 jstart)
@@ -285,14 +287,14 @@
                  ((> j jend))
                (vector-set! v (- j jstart) (vector-ref chunks j)))
              (%new-text (- end start)
-                        (remainder i+i0 N)
+                        (remainder i+i0 chunk-size)
                         v))))))
 
 ;;; There are a lot of special cases that could be exploited here:
 ;;;     share the characters of the longest text
 ;;;     share the characters of the longest run of texts
 ;;;         whose characters don't have to be copied
-;;;             if (text-length txt1) is a multiple of N,
+;;;             if (text-length txt1) is a multiple of chunk-size,
 ;;;                 and txt2 starts at offset 0,
 ;;;                 then txt1 and txt2 can be concatenated
 ;;;                 without copying any of their characters
@@ -304,12 +306,12 @@
 ;;; currently implements only two special cases:
 ;;;     share the full chunks of the longest text
 ;;;         provided
-;;;             it contains at least N characters
+;;;             it contains at least chunk-size characters
 ;;;             it contains at least half the characters of the result
 ;;;             its characters start at offset zero
 ;;;     share the full chunks of the first text
 ;;;         provided
-;;;             it contains at least N characters
+;;;             it contains at least chunk-size characters
 ;;;             its characters start at offset zero
 
 (: textual-concatenate ((list-of textual) -> text))
@@ -355,7 +357,7 @@
    ((list-of text) integer (or integer false) integer -> text))
 (define (%text-concatenate-n texts n longest longest-length)
   (if (and longest
-           (> longest-length N)
+           (> longest-length chunk-size)
            (< n (+ longest-length longest-length))
            (= 0 (length&i0.i0 (text.k longest))))
       (if (eq? longest (car texts))
@@ -389,18 +391,18 @@
 (define (%%text-concatenate-n texts n)
   (if (= 0 n)
       the-empty-text
-      (let* ((n/N     (quotient n N))
-             (m       (remainder n N))
-             (nchunks (+ n/N (if (= 0 m) 0 1)))
+      (let* ((n/chunk-size     (quotient n chunk-size))
+             (m       (remainder n chunk-size))
+             (nchunks (+ n/chunk-size (if (= 0 m) 0 1)))
              (chunks  (make-vector nchunks 'bug-in-text-concatenate))
              (txt (car texts))
              (k   (text.k txt))
              (len (length&i0.length k))
              (i0  (length&i0.i0 k)))
-        (if (and (> len N)
+        (if (and (> len chunk-size)
                  (= 0 i0))
-            (let* ((j (quotient len N))
-                   (ti (* j N))
+            (let* ((j (quotient len chunk-size))
+                   (ti (* j chunk-size))
                    (chunks0 (text.chunks txt)))
               (do ((i 0 (+ i 1)))
                   ((= i j))
@@ -419,15 +421,15 @@
 (: %%text-concatenate-front
    ((list-of text) text integer integer -> text))
 (define (%%text-concatenate-front texts txt k n)
-  (let* ((k/N     (quotient k N))
-         (mk      (remainder k N))
-         (i0      (if (= 0 mk) 0 (- N mk)))  ; start offset for result
-         (kchunks (+ k/N (if (= 0 mk) 0 1))) ; number of new chunks
+  (let* ((k/chunk-size     (quotient k chunk-size))
+         (mk      (remainder k chunk-size))
+         (i0      (if (= 0 mk) 0 (- chunk-size mk)))  ; start offset for result
+         (kchunks (+ k/chunk-size (if (= 0 mk) 0 1))) ; number of new chunks
          (n-k     (- n k))
-         (n-k/N   (quotient n-k N))
-         (m       (remainder n-k N))
+         (n-k/chunk-size   (quotient n-k chunk-size))
+         (m       (remainder n-k chunk-size))
          (nchunks (+ kchunks
-                     n-k/N
+                     n-k/chunk-size
                      (if (= 0 m) 0 1)))
          (chunks  (make-vector nchunks 'bug-in-text-concatenate))
          (chunks2 (text.chunks txt)))
@@ -465,7 +467,7 @@
              (k i0)   ; index into (vector-ref chunks j)
              (ti ti)  ; index into txt
              (bytes (make-list i0 0))) ; bytes being collected for next chunk
-    (cond ((= k N)
+    (cond ((= k chunk-size)
            (let ((bv (list->bytevector (reverse bytes))))
              (vector-set! chunks j bv))
            (loop texts txt (+ j 1) 0 ti '()))

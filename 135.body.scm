@@ -141,7 +141,7 @@
   (string->text (list->string chars)))
 
 ;;; These next two procedures take care to accumulate texts of
-;;; the kernel's preferred size, N.
+;;; the kernel's preferred size.
 
 (: text-unfold
    (procedure procedure procedure * #!optional (or char string text) procedure
@@ -165,9 +165,9 @@
                  (texts (list txt))
                  (chars '())
                  (seed seed))
-        (cond ((>= k N)
-               (let* ((k/N   (quotient k N))
-                      (k     (- k (* k/N N)))
+        (cond ((>= k chunk-size)
+               (let* ((k/chunk-size   (quotient k chunk-size))
+                      (k     (- k (* k/chunk-size chunk-size)))
                       (texts (cons (reverse-list->text (list-tail chars k))
                                    texts))
                       (chars (take chars k)))
@@ -220,9 +220,9 @@
                  (texts (list txt))
                  (chars '())
                  (seed seed))
-        (cond ((>= k N)
-               (let* ((k/N   (quotient k N))
-                      (k     (- k (* k/N N)))
+        (cond ((>= k chunk-size)
+               (let* ((k/chunk-size   (quotient k chunk-size))
+                      (k     (- k (* k/chunk-size chunk-size)))
                       (texts (cons (list->text (list-tail chars k)) texts))
                       (chars (take chars k)))
                  (loop k texts chars seed)))
@@ -1365,7 +1365,7 @@
                  (textual-concatenate-reverse texts)
                  (textual-concatenate-reverse texts
                                               (reverse-list->text chars))))
-            ((and (= 0 (remainder i N))
+            ((and (= 0 (remainder i chunk-size))
                   (not (null? chars)))
              (fast i (cons (reverse-list->text chars) texts) '()))
             (else
@@ -1413,7 +1413,7 @@
                  (textual-concatenate-reverse texts)
                  (textual-concatenate-reverse texts
                                               (reverse-list->text chars))))
-            ((and (= 0 (remainder i N))
+            ((and (= 0 (remainder i chunk-size))
                   (not (null? chars)))
              (fast i (cons (reverse-list->text chars) texts) '()))
             (else
@@ -1548,11 +1548,11 @@
         (cond ((= i n)
                (textual-concatenate
                 (reverse (%text-map-pieces pieces chars))))
-              ((>= k N)
+              ((>= k chunk-size)
                (loop i
                      (%text-map-pieces pieces chars)
                      '()
-                     (remainder k N)))
+                     (remainder k chunk-size)))
               (else
                (let ((x (proc (text-ref/no-checks txt i))))
                  (assert-type 'textual-map
@@ -1578,11 +1578,11 @@
       (cond ((= i n)
              (textual-concatenate
               (reverse (%text-map-pieces pieces chars))))
-            ((>= k N)
+            ((>= k chunk-size)
              (loop i
                    (%text-map-pieces pieces chars)
                    '()
-                   (remainder k N)))
+                   (remainder k chunk-size)))
             (else
              (let ((x (apply proc (%fetch-all texts i))))
                (assert-type 'textual-map
@@ -1683,11 +1683,11 @@
       (cond ((= i n)
              (textual-concatenate
               (reverse (%text-map-pieces pieces chars))))
-            ((>= k N)
+            ((>= k chunk-size)
              (loop i
                    (%text-map-pieces pieces chars)
                    '()
-                   (remainder k N)))
+                   (remainder k chunk-size)))
             (else
              (let ((x (proc i)))
                (assert-type 'textual-map-index
