@@ -131,6 +131,8 @@
           (srfi 135 kernel8))
 
   (define-type bytevector u8vector)
+  (define-type text (struct text-rtd))
+  (define-type textual (or text string))
 
   ;; CHICKEN: We need a Unicode-aware foldcase, so this can't be
   ;; imported from the r7rs egg.
