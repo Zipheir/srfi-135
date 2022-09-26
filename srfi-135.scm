@@ -139,13 +139,6 @@
   (define (string-foldcase s) (string-downcase s))
   (define (char-foldcase c) (char-downcase-single c))
 
-  (set-record-printer!
-   text-rtd
-   (lambda (text port)
-     (write-string "«" port)
-     (write-string (textual->string text) port)
-     (write-string "»" port)))
-
   (include "util.scm")
   (include "exceptions.scm")
   (include "135.body.scm")
