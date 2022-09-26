@@ -22,7 +22,7 @@
 ;;; OTHER DEALINGS IN THE SOFTWARE. 
 
 (module (srfi 135 kernel8)
-  (text-length text-ref text-tabulate subtext textual-concatenate
+  (text? text-length text-ref text-tabulate subtext textual-concatenate
    write-text)
 
 (import (except scheme string-length string-ref)
