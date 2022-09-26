@@ -1467,8 +1467,8 @@
   (assert-type 'textual-join (pair-or-null? textuals))
   (assert-type 'textual-join (textual? delimiter))
     (assert-type 'textual-join (symbol? grammar))
-    (assert (memq grammar '(infix strict-infix prefix suffix))
-      'textual-join "invalid grammar argument" grammar)
+    (unless (memq grammar '(infix strict-infix prefix suffix))
+      (error 'textual-join "invalid grammar argument" grammar))
     (let* ((texts (map (lambda (t) (%textual->text t 'textual-join textuals))
                        textuals))
            (delimiter (%textual->text delimiter
@@ -1476,7 +1476,8 @@
       (if (null? texts)
           (case grammar
             ((strict-infix)
-             (complain 'textual-join textuals delimiter grammar))
+             (error 'textual-join
+                    "null 'texts' argument with string-infix grammar"))
             (else (text)))
           (let loop ((rtxts (reverse texts))
                      (texts (if (eq? grammar 'suffix)
@@ -1798,10 +1799,10 @@
    ((s delimiter grammar)
     (textual-split s delimiter grammar #f))
    ((s0 delimiter grammar limit)
-    (define (bad-arguments)
-      (complain 'textual-split s0 delimiter grammar limit))
     (assert-type 'textual-split (symbol? grammar))
     (assert-type 'textual-split (or (not limit) (exact-integer? limit)))
+    (unless (memq grammar '(infix strict-infix prefix suffix))
+      (error 'textual-split "invalid grammar argument" grammar))
     (let* ((s (%textual->text s0 'textual-split s0 delimiter grammar limit))
            (delimiter
             (%textual->text delimiter
@@ -1817,7 +1818,8 @@
          (if (= 0 (%text-length s))
              (if (eq? grammar 'infix)
                  '()
-                 (bad-arguments))
+                 (error 'textual-split
+                        "empty textual with string-infix grammar"))
              splits))
         ((prefix)
          (if (and (pair? splits)
@@ -1828,9 +1830,7 @@
          (if (and (pair? splits)
                   (= 0 (%text-length (car (last-pair splits)))))
              (reverse (cdr (reverse splits)))
-             splits))
-        (else
-         (bad-arguments)))))))
+             splits)))))))
 
 (: %text-split-into-characters (text integer -> (list-of text)))
 (define (%text-split-into-characters s limit)
