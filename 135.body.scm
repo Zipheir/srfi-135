@@ -304,6 +304,10 @@
 (define-textual-start-end (textual->list txt start end)
   (string->list (textual->string (subtext txt start end))))
 
+(: %string->text (string -> text))
+(define (%string->text s)
+  (text-tabulate (cut string-ref s <>) (string-length s)))
+
 (: string->text (string #!optional integer integer -> text))
 (define string->text
   (case-lambda
