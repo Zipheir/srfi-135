@@ -340,7 +340,7 @@
 (define string->text
   (case-lambda
    ((s)
-  (assert-type 'string->text (string? s))
+    (assert-type 'string->text (string? s))
     (string->text-1 s))
    ((s start)
     (string->text s start (string-length s)))
@@ -1496,8 +1496,8 @@
    ((textuals delimiter)
     (textual-join textuals delimiter 'infix))
    ((textuals delimiter grammar)
-  (assert-type 'textual-join (pair-or-null? textuals))
-  (assert-type 'textual-join (textual? delimiter))
+    (assert-type 'textual-join (pair-or-null? textuals))
+    (assert-type 'textual-join (textual? delimiter))
     (assert-type 'textual-join (symbol? grammar))
     (unless (memq grammar '(infix strict-infix prefix suffix))
       (error 'textual-join "invalid grammar argument" grammar))
@@ -1555,10 +1555,10 @@
 (define textual-map
   (case-lambda
    ((proc txt)
-  (assert-type 'textual-map (procedure? proc))
+    (assert-type 'textual-map (procedure? proc))
     (%textual-map1 proc txt))
    ((proc txt1 txt2 . rest)
-  (assert-type 'textual-map (procedure? proc))
+    (assert-type 'textual-map (procedure? proc))
     (%textual-mapn proc (cons txt1 (cons txt2 rest))))))
 
 (: textual-map-valid-element? (* -> boolean))
