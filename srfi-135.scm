@@ -111,7 +111,7 @@
                            )
           (only (r7rs) make-bytevector bytevector? bytevector-u8-set!
                        bytevector-length bytevector-u8-ref utf8->string
-                       string->utf8 make-list exact-integer? vector->list
+                       string->utf8 make-list vector->list
                        char<=?
                        write-bytevector
                        )
