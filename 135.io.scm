@@ -1,5 +1,9 @@
 ;;;; Analogues of the familiar I/O procedures for texts.
 
+(: exact-natural? (* -> boolean))
+(define (exact-natural? x)
+  (and (exact-integer? x) (>= x 0)))
+
 ;;;; Input
 
 ;; FIXME: This correctly handles only UNIX-style lines.  Per R7RS
@@ -7,7 +11,7 @@
 (: text-read-line (#!optional input-port -> (or eof text)))
 (define (text-read-line . args)
   (let-optionals args ((port (current-input-port)))
-    (assert (input-port? port) 'text-read-line "illegal argument" port)
+    (assert-type 'text-read-line (input-port? port))
     (if (eof-object? (peek-char port))
         #!eof
         (text-unfold (lambda (x)
@@ -18,9 +22,9 @@
 
 (: read-text (integer #!optional input-port -> (or eof text)))
 (define (read-text k . args)
-  (assert (exact-natural? k) 'text-read-line "illegal argument" k)
+  (assert-type 'read-text (exact-natural? k))
   (let-optionals args ((port (current-input-port)))
-    (assert (input-port? port) 'text-read-line "illegal argument" port)
+    (assert-type 'read-text (input-port? port))
     (if (eof-object? (peek-char port))  ; workaround utf8's read-string
         #!eof
         (string->text-1 (read-string k port)))))
@@ -31,15 +35,14 @@
   (case-lambda
     (() (text-read-lines (current-input-port)))
     ((port)
-     (assert (input-port? port) 'text-read-line "illegal argument" port)
+     (assert-type 'text-read-lines (input-port? port))
      (unfold eof-object?
              values
              (lambda (_) (text-read-line port))
              (text-read-line port)))
     ((port max)
-     (assert (input-port? port) 'text-read-line "illegal argument" port)
-     (assert (exact-natural? max)
-       'text-read-line "illegal argument" max)
+     (assert-type 'text-read-lines (input-port? port))
+     (assert-type 'text-read-lines (exact-natural? max))
      (unfold (lambda (p)
                (or (eof-object? (car p)) (zero? (cdr p))))
              car
@@ -55,22 +58,21 @@
   (case-lambda
     ((t) (write-textual t (current-output-port)))
     ((t port)
-     (assert (output-port? port) 'write-textual "illegal argument" port)
+     (assert-type 'write-textual (output-port? port))
      (cond ((string? t) (write-string t (string-length t) port))
            ((text? t) (write-text t port))
-           (else (error 'write-textual "illegal argument" t))))
+           (else (type-exception 'write-textual "illegal argument" t))))
     ((t port start) (write-textual t port start (textual-length t)))
     ((t port start end)
-     (assert (textual? t) 'write-textual "illegal argument" t)
-     (assert (output-port? port) 'write-textual "illegal argument" port)
-     (assert (exact-integer? start)
-       'write-textual "illegal argument" start)
-     (assert (exact-integer? end) 'write-textual "illegal argument" end)
-     (assert (<= 0 start end (textual-length t))
-       'write-textual "start/end out of range" start end t)
-     (if (string? t)
-         (write-string (substring/shared t start end) #f port)
-         (write-text (subtext t start end) port)))))
+     (assert-type 'write-textual (output-port? port))
+     (assert-type 'write-textual (exact-integer? start))
+     (assert-type 'write-textual (exact-integer? end))
+     (%check-range 'write-textual t start end)
+     (cond ((string? t)
+            (write-string (substring/shared t start end) #f port))
+           ((text? t) (write-text (subtext t start end) port))
+           (else
+            (type-exception 'write-textual "illegal argument" t))))))
 
 ;;;; Text(ual) ports.
 
@@ -83,7 +85,8 @@
 (define (open-input-textual t)
   (cond ((string? t) (open-input-string t))
         ((text? t) (open-input-string (textual->string t)))
-        (else (error 'open-input-textual "illegal argument" t))))
+        (else
+         (type-exception 'open-input-textual "illegal argument" t))))
 
 ;;; FIXME: These are just wrappers around string ports.  (chicken port)
 ;;; doesn't provide the primitives to do a direct implementation, but
@@ -94,5 +97,5 @@
 
 (: get-output-text (output-port -> text))
 (define (get-output-text port)
-  (assert (output-port? port) 'get-output-text "illegal argument" port)
+  (assert-type 'get-output-text (output-port? port))
   (string->text-1 (get-output-string port)))
