@@ -22,6 +22,31 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 ;;; OTHER DEALINGS IN THE SOFTWARE. 
 
+;;;; Checking forms
+
+;; Check that i is a valid index into t.
+(: %check-index (symbol textual integer -> undefined))
+(define (%check-index loc t i)
+  (unless (and (>= i 0) (< i (textual-length t)))
+    (bounds-exception loc "index out of bounds" i t)))
+
+;; Check that [start, end) defines a valid range of t.
+(define (%check-range loc t start end)
+  (unless (<= 0 start end (textual-length t))
+    (bounds-exception loc "invalid range" start end t)))
+
+;; Check that i is a valid index into bv.
+(: %check-bv-index (symbol bytevector integer -> undefined))
+(define (%check-bv-index loc bv i)
+  (unless (and (>= i 0) (< i (bytevector-length bv)))
+    (bounds-exception loc "index out of bounds" i bv)))
+
+;; Check that [start, end) defines a valid range of bv.
+(: %check-bv-range (symbol bytevector integer -> undefined))
+(define (%check-bv-range loc bv start end)
+  (unless (<= 0 start end (bytevector-length bv))
+    (bounds-exception loc "invalid range" start end bv)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Some macros to make textual arguments and optional arguments
