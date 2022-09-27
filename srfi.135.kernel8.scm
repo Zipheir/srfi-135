@@ -44,6 +44,7 @@
 
 ;;; 1-argument version
 
+(: string->text-1 (string -> text))
 (define (string->text-1 s)
   (if (string? s)
       (text-tabulate (lambda (i) (string-ref s i))
@@ -53,12 +54,15 @@
 (: chunk-size fixnum)
 (define chunk-size 128)
 
+(: length&i0 (fixnum fixnum -> fixnum))
 (define (length&i0 len i0)
   (+ (* chunk-size len) i0))
 
+(: length&i0.length (fixnum -> fixnum))
 (define (length&i0.length k)
   (quotient k chunk-size))
 
+(: length&i0.i0 (fixnum -> fixnum))
 (define (length&i0.i0 k)
   (remainder k chunk-size))
 
@@ -71,9 +75,11 @@
 (define-type text (struct text-rtd))
 (define-type textual (or text string))
 
+(: %new-text (fixnum fixnum (vector-of bytevector) -> text))
 (define (%new-text len i0 chunks)
   (new-text0 (length&i0 len i0) chunks))
 
+(: the-empty-text text)
 (define the-empty-text
   (%new-text 0 0 (vector (make-bytevector 0))))
 

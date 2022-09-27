@@ -31,6 +31,7 @@
     (bounds-exception loc "index out of bounds" i t)))
 
 ;; Check that [start, end) defines a valid range of t.
+(: %check-range (symbol textual integer integer -> undefined))
 (define (%check-range loc t start end)
   (unless (<= 0 start end (textual-length t))
     (bounds-exception loc "invalid range" start end t)))
