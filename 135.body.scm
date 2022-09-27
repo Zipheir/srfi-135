@@ -30,6 +30,12 @@
   (unless (and (>= i 0) (< i (textual-length t)))
     (bounds-exception loc "index out of bounds" i t)))
 
+;; Check that i is a valid lower bound of a range of t.
+(: %check-start-index (symbol textual fixnum -> undefined))
+(define (%check-start-index loc t i)
+  (unless (<= 0 i (textual-length t))
+    (bounds-exception loc "invalid start index" i t)))
+
 ;; Check that [start, end) defines a valid range of t.
 (: %check-range (symbol textual fixnum fixnum -> undefined))
 (define (%check-range loc t start end)
@@ -102,7 +108,7 @@
            (let* ((text (%textual->text textual 'f args ... textual start))
                   (n (text-length text)))
              (assert-type 'f (fixnum? start))
-             (%check-index 'f text start)
+             (%check-range 'f text start n)
              (f args ... text start n)))
           ((args ... textual start end)
            (let* ((text (%textual->text textual 'f args ... textual start end))
@@ -303,7 +309,7 @@
         (textual->string txt 0 (textual-length txt))))
    ((txt start)
     (assert-type 'textual-string (fixnum? start))
-    (%check-index 'textual-string txt start)
+    (%check-start-index 'textual-string txt start)
     (if (string? txt)
         (substring txt start (string-length txt))
         (textual->string txt start (textual-length txt))))
@@ -1474,7 +1480,7 @@
     (textual-concatenate-reverse (cons final-textual texts)))
    ((texts final-textual end)
     (assert-type 'textual-concatenate-reverse (every textual? texts))
-    (%check-index 'textual-concatenate-reverse final-textual end)
+    (%check-start-index 'textual-concatenate-reverse final-textual end)
     (textual-concatenate-reverse texts
                                  (subtext
                                   (%textual->text final-textual
