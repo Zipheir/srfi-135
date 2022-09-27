@@ -88,7 +88,6 @@
 (define (text-ref txt i)
   (assert-type 'text-ref (text? txt))
   (assert-type 'text-ref (exact-integer? i))
-  (%check-index 'text-ref txt i)
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
          (len    (length&i0.length k))
