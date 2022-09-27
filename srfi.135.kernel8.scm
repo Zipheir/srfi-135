@@ -42,15 +42,6 @@
 (include "exceptions.scm")
 (include "util.scm")
 
-;;; 1-argument version
-
-(: string->text-1 (string -> text))
-(define (string->text-1 s)
-  (if (string? s)
-      (text-tabulate (lambda (i) (string-ref s i))
-                     (string-length s))
-      (complain 'string->text s)))
-
 (: chunk-size fixnum)
 (define chunk-size 128)
 
@@ -82,6 +73,14 @@
 (: the-empty-text text)
 (define the-empty-text
   (%new-text 0 0 (vector (make-bytevector 0))))
+
+;; Unary version
+(: string->text-1 (string -> text))
+(define (string->text-1 s)
+  (if (string? s)
+      (text-tabulate (lambda (i) (string-ref s i))
+                     (string-length s))
+      (complain 'string->text s)))
 
 ;;; text? is defined by the record definition above.
 
