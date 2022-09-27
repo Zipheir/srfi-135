@@ -43,6 +43,18 @@
   (define-type textual (or text string))
 
   (include "exceptions.scm")
+
+  ;; Check that i is a valid index into t.
+  (: %check-index (symbol textual integer -> undefined))
+  (define (%check-index loc t i)
+    (unless (and (>= i 0) (< i (textual-length t)))
+      (bounds-exception loc "index out of bounds" i t)))
+
+  ;; Check that [start, end) defines a valid range of t.
+  (define (%check-range loc t start end)
+    (unless (<= 0 start end (textual-length t))
+      (bounds-exception loc "invalid range" start end t)))
+
   (include "135.gen-acc.scm")
   (include "135.io.scm")
 )
