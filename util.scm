@@ -17,8 +17,8 @@
 (define (pair-or-null? x)
   (or (null? x) (pair? x)))
 
-(define (exact-natural? x)
-  (and (exact-integer? x) (>= x 0)))
+(define (natural-fixnum? x)
+  (and (fixnum? x) (>= x 0)))
 
 (define (%textual-or-char? x)
   (or (string? x) (text? x) (char? x)))
