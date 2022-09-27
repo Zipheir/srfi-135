@@ -69,7 +69,7 @@
 (define-record-type text-rtd
   (new-text0 k chunks)
   text?
-  (k      text.k : integer)
+  (k      text.k : fixnum)
   (chunks text.chunks : (vector-of bytevector)))
 
 (define-type text (struct text-rtd))
@@ -85,15 +85,15 @@
 
 ;;; text? is defined by the record definition above.
 
-(: text-length (text -> integer))
+(: text-length (text -> fixnum))
 (define (text-length txt)
   (assert-type 'text-length (text? txt))
   (length&i0.length (text.k txt)))
 
-(: text-ref (text integer -> char))
+(: text-ref (text fixnum -> char))
 (define (text-ref txt i)
   (assert-type 'text-ref (text? txt))
-  (assert-type 'text-ref (exact-integer? i))
+  (assert-type 'text-ref (fixnum? i))
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
          (len    (length&i0.length k))
@@ -113,11 +113,11 @@
 
 ;;; Non-checking versions
 
-(: %text-length (text -> integer))
+(: %text-length (text -> fixnum))
 (define (%text-length txt)
   (length&i0.length (text.k txt)))
 
-(: text-ref/no-checks (text integer -> char))
+(: text-ref/no-checks (text fixnum -> char))
 (define (text-ref/no-checks txt i)
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
@@ -136,7 +136,7 @@
 
 ;;; Returns character i of the UTF-8.
 
-(: %utf8-ref (bytevector integer -> char))
+(: %utf8-ref (bytevector fixnum -> char))
 (define (%utf8-ref bv i)
   (let loop ((j 0)     ; character index of (bytevector-u8-ref bv k)
              (k 0))    ; byte index into bv
@@ -152,7 +152,7 @@
                 (else
                  (loop (+ j 1) (+ k 4))))))))
 
-(: %utf8-ref (bytevector integer -> char))
+(: %utf8-ref (bytevector fixnum -> char))
 (define (%utf8-char-at bv k)
   (let ((byte (bytevector-u8-ref bv k)))
     (cond ((< byte 128)
@@ -187,10 +187,10 @@
 
 ;;; text-tabulate avoids side effects (in case proc returns more than once)
 
-(: text-tabulate ((integer -> char) integer -> text))
+(: text-tabulate ((fixnum -> char) fixnum -> text))
 (define (text-tabulate proc len)
   (assert-type 'text-tabulate (procedure? proc))
-  (assert-type 'text-tabulate (exact-integer? len))
+  (assert-type 'text-tabulate (fixnum? len))
   (if (= 0 len)
       the-empty-text
       (let loop ((i len)       ; highest index that's been tabulated
@@ -262,16 +262,16 @@
 ;;; subtext is now defined only for texts; use subtextual
 ;;; if the first argument might be a string.
 
-(: subtext (text integer integer -> text))
+(: subtext (text fixnum fixnum -> text))
 (define (subtext txt start end)
   (assert-type 'subtext (text? txt))
-  (assert-type 'subtext (exact-integer? start))
-  (assert-type 'subtext (exact-integer? end))
+  (assert-type 'subtext (fixnum? start))
+  (assert-type 'subtext (fixnum? end))
   (unless (<= 0 start end (%text-length txt))
     (bounds-exception 'subtext "start/end out of range" txt start end))
   (%subtext txt start end))
 
-(: %subtext (text integer integer -> text))
+(: %subtext (text fixnum fixnum -> text))
 (define (%subtext txt start end)
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
@@ -366,7 +366,7 @@
 ;;; longest-length is its length (or zero).
 
 (: %textual-concatenate-n
-   ((list-of text) integer (or integer false) integer -> text))
+   ((list-of text) fixnum (or fixnum false) fixnum -> text))
 (define (%text-concatenate-n texts n longest longest-length)
   (if (and longest
            (> longest-length chunk-size)
@@ -399,7 +399,7 @@
 ;;; If the first text has a start index of zero,
 ;;; then its full chunks don't have to be copied.
 
-(: %%text-concatenate-n ((list-of text) integer -> text))
+(: %%text-concatenate-n ((list-of text) fixnum -> text))
 (define (%%text-concatenate-n texts n)
   (if (= 0 n)
       the-empty-text
@@ -431,7 +431,7 @@
 ;;; without copying any chunks of the second argument.
 
 (: %%text-concatenate-front
-   ((list-of text) text integer integer -> text))
+   ((list-of text) text fixnum fixnum -> text))
 (define (%%text-concatenate-front texts txt k n)
   (let* ((k/chunk-size     (quotient k chunk-size))
          (mk      (remainder k chunk-size))
@@ -470,7 +470,7 @@
 ;;; tail of the chunks vector.
 
 (: %%text-concatenate-finish
-   (integer integer (vector-of bytevector) integer (list-of text) integer
+   (fixnum fixnum (vector-of bytevector) fixnum (list-of text) fixnum
      -> text))
 (define (%%text-concatenate-finish n i0 chunks j texts ti)
   (let loop ((texts (cdr texts))

@@ -25,25 +25,25 @@
 ;;;; Checking forms
 
 ;; Check that i is a valid index into t.
-(: %check-index (symbol textual integer -> undefined))
+(: %check-index (symbol textual fixnum -> undefined))
 (define (%check-index loc t i)
   (unless (and (>= i 0) (< i (textual-length t)))
     (bounds-exception loc "index out of bounds" i t)))
 
 ;; Check that [start, end) defines a valid range of t.
-(: %check-range (symbol textual integer integer -> undefined))
+(: %check-range (symbol textual fixnum fixnum -> undefined))
 (define (%check-range loc t start end)
   (unless (<= 0 start end (textual-length t))
     (bounds-exception loc "invalid range" start end t)))
 
 ;; Check that i is a valid index into bv.
-(: %check-bv-index (symbol bytevector integer -> undefined))
+(: %check-bv-index (symbol bytevector fixnum -> undefined))
 (define (%check-bv-index loc bv i)
   (unless (and (>= i 0) (< i (bytevector-length bv)))
     (bounds-exception loc "index out of bounds" i bv)))
 
 ;; Check that [start, end) defines a valid range of bv.
-(: %check-bv-range (symbol bytevector integer integer -> undefined))
+(: %check-bv-range (symbol bytevector fixnum fixnum -> undefined))
 (define (%check-bv-range loc bv start end)
   (unless (<= 0 start end (bytevector-length bv))
     (bounds-exception loc "invalid range" start end bv)))
@@ -101,14 +101,14 @@
           ((args ... textual start)
            (let* ((text (%textual->text textual 'f args ... textual start))
                   (n (text-length text)))
-             (assert-type 'f (exact-integer? start))
+             (assert-type 'f (fixnum? start))
              (%check-index 'f text start)
              (f args ... text start n)))
           ((args ... textual start end)
            (let* ((text (%textual->text textual 'f args ... textual start end))
                   (n (text-length text)))
-             (assert-type 'f (exact-integer? start))
-             (assert-type 'f (exact-integer? end))
+             (assert-type 'f (fixnum? start))
+             (assert-type 'f (fixnum? end))
              (%check-range 'f text start end)
              (f args ... text start end)))))))))
 
@@ -128,7 +128,7 @@
   (assert-type 'textual-null? (textual? txt))
   (= 0 (textual-length txt)))
 
-(: textual-every ((char -> *) textual integer integer -> *))
+(: textual-every ((char -> *) textual fixnum fixnum -> *))
 (define-textual-start-end (textual-every pred textual start end)
   (assert-type 'textual-every (procedure? pred))
   (if (= start end)
@@ -140,7 +140,7 @@
               (and (pred (text-ref/no-checks textual i))
                    (loop (+ i 1))))))))
 
-(: textual-any ((char -> *) textual integer integer -> *))
+(: textual-any ((char -> *) textual fixnum fixnum -> *))
 (define-textual-start-end (textual-any pred textual start end)
   (assert-type 'textual-any (procedure? pred))
   (let loop ((i start))
@@ -155,7 +155,7 @@
 ;;;
 ;;; text-tabulate is defined by the kernel
 
-(: make-text (integer char -> text))
+(: make-text (fixnum char -> text))
 (define (make-text n c)
   (assert-type 'make-text (exact-natural? n))
   (assert-type 'make-text (char? c))
@@ -293,7 +293,7 @@
         ((text? x)
          x)))
 
-(: textual->string (textual #!optional integer integer -> string))
+(: textual->string (textual #!optional fixnum fixnum -> string))
 (define textual->string
   (case-lambda
    ((txt)
@@ -302,15 +302,15 @@
         txt
         (textual->string txt 0 (textual-length txt))))
    ((txt start)
-    (assert-type 'textual-string (exact-integer? start))
+    (assert-type 'textual-string (fixnum? start))
     (%check-index 'textual-string txt start)
     (if (string? txt)
         (substring txt start (string-length txt))
         (textual->string txt start (textual-length txt))))
    ((txt start end)
     (assert-type 'textual-string (textual? txt))
-    (assert-type 'textual-string (exact-integer? start))
-    (assert-type 'textual-string (exact-integer? end))
+    (assert-type 'textual-string (fixnum? start))
+    (assert-type 'textual-string (fixnum? end))
     (%check-range 'textual-string txt start end)
     (let* ((txt (%textual->text txt 'textual->string txt start end))
            (n (- end start))
@@ -322,15 +322,15 @@
 
 ;;; FIXME: Improve these two.
 
-(: textual->vector (textual #!optional integer integer -> (vector-of char)))
+(: textual->vector (textual #!optional fixnum fixnum -> (vector-of char)))
 (define-textual-start-end (textual->vector txt start end)
   (list->vector (string->list (textual->string (subtext txt start end)))))
 
-(: textual->list (textual #!optional integer integer -> (list-of char)))
+(: textual->list (textual #!optional fixnum fixnum -> (list-of char)))
 (define-textual-start-end (textual->list txt start end)
   (string->list (textual->string (subtext txt start end))))
 
-(: string->text (string #!optional integer integer -> text))
+(: string->text (string #!optional fixnum fixnum -> text))
 (define string->text
   (case-lambda
    ((s)
@@ -340,24 +340,24 @@
     (string->text s start (string-length s)))
    ((s start end)
     (assert-type 'string->text (string? s))
-    (assert-type 'string->text (exact-integer? start))
-    (assert-type 'string->text (exact-integer? end))
+    (assert-type 'string->text (fixnum? start))
+    (assert-type 'string->text (fixnum? end))
     (%check-range 'string->text s start end)
     (string->text-1 (substring s start end)))))
 
-(: vector->text ((vector-of char) #!optional integer integer -> text))
+(: vector->text ((vector-of char) #!optional fixnum fixnum -> text))
 (define (vector->text v . args)
   (let ((lenv (vector-length v)))
     (let-optionals args ((start 0) (end lenv))
       (assert-type 'vector->text (vector? v))
-      (assert-type 'vector->text (exact-integer? start))
-      (assert-type 'vector->text (exact-integer? end))
+      (assert-type 'vector->text (fixnum? start))
+      (assert-type 'vector->text (fixnum? end))
       (unless (<= 0 start end lenv)
         (bounds-exception 'vector->text "invalid range" start end v))
       (text-tabulate (lambda (i) (vector-ref v (+ i start)))
                      (- end start)))))
 
-(: list->text ((list-of char) #!optional integer integer -> text))
+(: list->text ((list-of char) #!optional fixnum fixnum -> text))
 (define (list->text chars . start/end)
   (assert-type 'list->text (pair-or-null? chars))
   (apply string->text (list->string chars) start/end))
@@ -367,33 +367,33 @@
   (assert-type 'list->text (pair-or-null? chars))
   (string->text (list->string (reverse chars))))
 
-(: textual->utf8 (textual #!optional integer integer -> bytevector))
+(: textual->utf8 (textual #!optional fixnum fixnum -> bytevector))
 (define (textual->utf8 txt . args)
   (assert-type 'textual->utf8 (textual? txt))
   (let ((len (textual-length txt)))
     (let-optionals args ((start 0) (end len))
-      (assert-type 'textual->utf8 (exact-integer? start))
-      (assert-type 'textual->utf8 (exact-integer? end))
+      (assert-type 'textual->utf8 (fixnum? start))
+      (assert-type 'textual->utf8 (fixnum? end))
       (%check-range 'textual->utf8 txt start end)
       (if (string? txt)
           (string->utf8 txt start end)
           (string->utf8 (textual->string (subtext txt start end)))))))
 
-(: textual->utf16 (textual #!optional integer integer -> bytevector))
+(: textual->utf16 (textual #!optional fixnum fixnum -> bytevector))
 (define-textual-start-end (textual->utf16 txt start end)
   (%textual->utf16 txt start end #f))
 
-(: textual->utf16be (textual #!optional integer integer -> bytevector))
+(: textual->utf16be (textual #!optional fixnum fixnum -> bytevector))
 (define-textual-start-end (textual->utf16be txt start end)
   (%textual->utf16 txt start end 'big))
 
-(: textual->utf8le (textual #!optional integer integer -> bytevector))
+(: textual->utf8le (textual #!optional fixnum fixnum -> bytevector))
 (define-textual-start-end (textual->utf16le txt start end)
   (%textual->utf16 txt start end 'little))
 
 ;;; FIXME: should this check for illegal code points?
 
-(: %textual->utf8le (textual integer integer symbol -> bytevector))
+(: %textual->utf8le (textual fixnum fixnum symbol -> bytevector))
 (define (%textual->utf16 txt start end endianness)
   (let* ((n (textual-fold (lambda (c n)
                             (cond ((< (char->integer c) #x10000)
@@ -438,7 +438,7 @@
                      (bytevector-u8-set! result (+ j 2 lobits) low1))
                    (loop (+ i 1) (+ j 4)))))))))
 
-(: utf8->text (bytevector #!optional integer integer -> text))
+(: utf8->text (bytevector #!optional fixnum fixnum -> text))
 (define utf8->text
   (case-lambda
    ((bv)
@@ -446,47 +446,47 @@
     (string->text (utf8->string bv)))
    ((bv start)
     (assert-type 'utf8->text (bytevector? bv))
-    (assert-type 'utf8->text (exact-integer? start))
+    (assert-type 'utf8->text (fixnum? start))
     (%check-bv-index 'utf8->text bv start)
     (string->text (utf8->string bv start)))
    ((bv start end)
     (assert-type 'utf8->text (bytevector? bv))
-    (assert-type 'utf8->text (exact-integer? start))
-    (assert-type 'utf8->text (exact-integer? end))
+    (assert-type 'utf8->text (fixnum? start))
+    (assert-type 'utf8->text (fixnum? end))
     (%check-bv-range 'utf8->text bv start end)
     (string->text (utf8->string bv start end)))))
 
-(: utf16->text (bytevector #!optional integer integer -> text))
+(: utf16->text (bytevector #!optional fixnum fixnum -> text))
 (define (utf16->text bv . args)
   (assert-type 'utf16->text (bytevector? bv))
   (let ((len (bytevector-length bv)))
     (let-optionals args ((start 0) (end len))
-      (assert-type 'utf16->text (exact-integer? start))
-      (assert-type 'utf16->text (exact-integer? end))
+      (assert-type 'utf16->text (fixnum? start))
+      (assert-type 'utf16->text (fixnum? end))
       (%check-bv-range 'utf16->text bv start end)
       (%utf16->text bv start end #f))))
 
-(: utf16be->text (bytevector #!optional integer integer -> text))
+(: utf16be->text (bytevector #!optional fixnum fixnum -> text))
 (define (utf16be->text bv . args)
   (assert-type 'utf16be->text (bytevector? bv))
   (let ((len (bytevector-length bv)))
     (let-optionals args ((start 0) (end len))
-      (assert-type 'utf16be->text (exact-integer? start))
-      (assert-type 'utf16be->text (exact-integer? end))
+      (assert-type 'utf16be->text (fixnum? start))
+      (assert-type 'utf16be->text (fixnum? end))
       (%check-bv-range 'utf16be->text bv start end)
       (%utf16->text bv start end 'big))))
 
-(: utf16le->text (bytevector #!optional integer integer -> text))
+(: utf16le->text (bytevector #!optional fixnum fixnum -> text))
 (define (utf16le->text bv . args)
   (assert-type 'utf16le->text (bytevector? bv))
   (let ((len (bytevector-length bv)))
     (let-optionals args ((start 0) (end len))
-      (assert-type 'utf16le->text (exact-integer? start))
-      (assert-type 'utf16le->text (exact-integer? end))
+      (assert-type 'utf16le->text (fixnum? start))
+      (assert-type 'utf16le->text (fixnum? end))
       (%check-bv-range 'utf16le->text bv start end)
       (%utf16->text bv start end 'little))))
 
-(: %utf16le->text (bytevector integer integer symbol -> text))
+(: %utf16le->text (bytevector fixnum fixnum symbol -> text))
 (define (%utf16->text bv start end endianness)
   (let* ((bom (and (not endianness)
                    (< start end)
@@ -550,51 +550,51 @@
 ;;;
 ;;; text-length, text-ref, and subtext are defined by the kernel
 
-(: textual-length (textual --> integer))
+(: textual-length (textual --> fixnum))
 (define (textual-length txt)
   (assert-type 'textual-length (textual? txt))
   (if (string? txt)
       (string-length txt)
       (text-length txt)))
 
-(: textual-ref (textual integer -> char))
+(: textual-ref (textual fixnum -> char))
 (define (textual-ref txt i)
   (assert-type 'textual-ref (textual? txt))
-  (assert-type 'textual-ref (exact-integer? i))
+  (assert-type 'textual-ref (fixnum? i))
   (if (string? txt)
       (string-ref txt i)
       (text-ref/no-checks txt i)))
 
-(: subtextual (textual integer integer -> text))
+(: subtextual (textual fixnum fixnum -> text))
 (define-textual (subtextual txt start end)
   (subtext txt start end))
 
 ;;; FIXME: could be faster, but this procedure shouldn't be used much
 
-(: textual-copy (textual #!optional integer integer -> text))
+(: textual-copy (textual #!optional fixnum fixnum -> text))
 (define-textual-start-end (textual-copy text start end)
   (string->text (textual->string text start end)))
 
-(: textual-take (textual integer -> text))
+(: textual-take (textual fixnum -> text))
 (define-textual (textual-take txt nchars)
   (subtextual txt 0 nchars))
 
-(: textual-drop (textual integer -> text))
+(: textual-drop (textual fixnum -> text))
 (define-textual (textual-drop txt nchars)
   (subtextual txt nchars (text-length txt)))
 
-(: textual-take-right (textual integer -> text))
+(: textual-take-right (textual fixnum -> text))
 (define-textual (textual-take-right txt nchars)
   (let ((n (text-length txt)))
     (subtextual txt (- n nchars) n)))
 
-(: textual-drop-right (textual integer -> text))
+(: textual-drop-right (textual fixnum -> text))
 (define-textual (textual-drop-right txt nchars)
   (let ((n (text-length txt)))
     (subtextual txt 0 (- n nchars))))
 
 (: textual-pad
-   (textual integer #!optional char integer integer -> text))
+   (textual fixnum #!optional char fixnum fixnum -> text))
 (define (textual-pad t len . args)
   (let* ((txt (%textual->text t 'textual-pad t))
          (old-len (text-length txt)))
@@ -602,12 +602,12 @@
       (assert-type 'text-pad (exact-natural? len))
       (when (pair? args)
         (assert-type 'text-pad (char? c))
-        (assert-type 'text-pad (exact-integer? start))
-        (assert-type 'text-pad (exact-integer? end))
+        (assert-type 'text-pad (fixnum? start))
+        (assert-type 'text-pad (fixnum? end))
         (%check-range 'text-pad txt start end))
       (%text-pad txt len c start end))))
 
-(: %text-pad (text integer char integer integer -> text))
+(: %text-pad (text fixnum char fixnum fixnum -> text))
 (define (%text-pad txt len c start end)
   (let* ((n (text-length txt))
          (k (- end start)))
@@ -626,7 +626,7 @@
            (subtext txt (- end len) end)))))
 
 (: textual-pad-right
-   (textual integer #!optional char integer integer -> text))
+   (textual fixnum #!optional char fixnum fixnum -> text))
 (define (textual-pad-right t len . args)
   (let* ((txt (%textual->text t 'textual-pad-right t len))
          (old-len (text-length txt)))
@@ -634,12 +634,12 @@
       (assert-type 'text-pad-right (exact-natural? len))
       (when (pair? args)
         (assert-type 'text-pad-right (char? c))
-        (assert-type 'text-pad-right (exact-integer? start))
-        (assert-type 'text-pad-right (exact-integer? end))
+        (assert-type 'text-pad-right (fixnum? start))
+        (assert-type 'text-pad-right (fixnum? end))
         (%check-range 'text-pad-right txt start end))
       (%text-pad-right txt len c start end))))
 
-(: %text-pad-right (text integer char integer integer -> text))
+(: %text-pad-right (text fixnum char fixnum fixnum -> text))
 (define (%text-pad-right txt len c start end)
   (let* ((n (text-length txt))
          (k (- end start)))
@@ -658,7 +658,7 @@
            (subtext txt start (+ start len))))))
 
 (: textual-trim
-   (textual #!optional (char -> boolean) integer integer -> text))
+   (textual #!optional (char -> boolean) fixnum fixnum -> text))
 (define textual-trim
   (case-lambda
    ((txt)
@@ -672,11 +672,11 @@
     (let ((txt (%textual->text txt 'textual-trim txt pred start end)))
       (%text-trim txt pred start end)))))
 
-(: %text-trim (text (char -> boolean) integer integer -> text))
+(: %text-trim (text (char -> boolean) fixnum fixnum -> text))
 (define (%text-trim txt pred start end)
   (assert-type 'textual-trim (procedure? pred))
-  (assert-type 'textual-trim (exact-integer? start))
-  (assert-type 'textual-trim (exact-integer? end))
+  (assert-type 'textual-trim (fixnum? start))
+  (assert-type 'textual-trim (fixnum? end))
   (%check-range 'textual-trim txt start end)
   (let loop ((i start))
     (cond ((= i end)
@@ -687,7 +687,7 @@
            (subtext txt i end)))))
 
 (: textual-trim-right
-   (textual #!optional (char -> boolean) integer integer -> text))
+   (textual #!optional (char -> boolean) fixnum fixnum -> text))
 (define textual-trim-right
   (case-lambda
    ((txt)
@@ -701,11 +701,11 @@
     (let ((txt (%textual->text txt 'textual-trim-right txt pred start end)))
       (%text-trim-right txt pred start end)))))
 
-(: %text-trim-right (text (char -> boolean) integer integer -> text))
+(: %text-trim-right (text (char -> boolean) fixnum fixnum -> text))
 (define (%text-trim-right txt pred start end)
   (assert-type 'textual-trim-right (procedure? pred))
-  (assert-type 'textual-trim-right (exact-integer? start))
-  (assert-type 'textual-trim-right (exact-integer? end))
+  (assert-type 'textual-trim-right (fixnum? start))
+  (assert-type 'textual-trim-right (fixnum? end))
   (%check-range 'textual-trim-right txt start end)
   (let loop ((i (- end 1)))
     (cond ((< i start)
@@ -716,7 +716,7 @@
            (subtext txt start (+ i 1))))))
 
 (: textual-trim-both
-   (textual #!optional (char -> boolean) integer integer -> text))
+   (textual #!optional (char -> boolean) fixnum fixnum -> text))
 (define textual-trim-both
   (case-lambda
    ((txt)
@@ -732,11 +732,11 @@
 
 ;;; This is efficient because subtext is fast.
 
-(: %text-trim-both (text (char -> boolean) integer integer -> text))
+(: %text-trim-both (text (char -> boolean) fixnum fixnum -> text))
 (define (%text-trim-both txt pred start end)
   (assert-type 'textual-trim-both (procedure? pred))
-  (assert-type 'textual-trim-both (exact-integer? start))
-  (assert-type 'textual-trim-both (exact-integer? end))
+  (assert-type 'textual-trim-both (fixnum? start))
+  (assert-type 'textual-trim-both (fixnum? end))
   (%check-range 'textual-trim-both txt start end)
   (textual-trim (textual-trim-right txt pred start end) pred))
 
@@ -745,33 +745,33 @@
 ;;; Replacement
 
 (: textual-replace
-   (text text integer integer #!optional integer integer -> text))
+   (text text fixnum fixnum #!optional fixnum fixnum -> text))
 (define textual-replace
   (case-lambda
    ((txt1 txt2 start1 end1 start2 end2)
     (assert-type 'textual-replace (textual? txt1))
     (assert-type 'textual-replace (textual? txt2))
-    (assert-type 'textual-replace (exact-integer? start1))
-    (assert-type 'textual-replace (exact-integer? end1))
-    (assert-type 'textual-replace (exact-integer? start2))
-    (assert-type 'textual-replace (exact-integer? end2))
+    (assert-type 'textual-replace (fixnum? start1))
+    (assert-type 'textual-replace (fixnum? end1))
+    (assert-type 'textual-replace (fixnum? start2))
+    (assert-type 'textual-replace (fixnum? end2))
     (textual-append (subtextual txt1 0 start1)
                     (subtextual txt2 start2 end2)
                     (subtextual txt1 end1 (textual-length txt1))))
    ((txt1 txt2 start1 end1 start2)
     (assert-type 'textual-replace (textual? txt1))
     (assert-type 'textual-replace (textual? txt2))
-    (assert-type 'textual-replace (exact-integer? start1))
-    (assert-type 'textual-replace (exact-integer? end1))
-    (assert-type 'textual-replace (exact-integer? start2))
+    (assert-type 'textual-replace (fixnum? start1))
+    (assert-type 'textual-replace (fixnum? end1))
+    (assert-type 'textual-replace (fixnum? start2))
     (textual-append (subtextual txt1 0 start1)
                     (subtextual txt2 start2 (textual-length txt2))
                     (subtextual txt1 end1 (textual-length txt1))))
    ((txt1 txt2 start1 end1)
     (assert-type 'textual-replace (textual? txt1))
     (assert-type 'textual-replace (textual? txt2))
-    (assert-type 'textual-replace (exact-integer? start1))
-    (assert-type 'textual-replace (exact-integer? end1))
+    (assert-type 'textual-replace (fixnum? start1))
+    (assert-type 'textual-replace (fixnum? end1))
     (textual-append (subtextual txt1 0 start1)
                     txt2
                     (subtextual txt1 end1 (textual-length txt1))))))
@@ -863,7 +863,7 @@
 ;;; greater than b (+1), computes the boolean result by
 ;;; calling make-boolean on that numerical value and 0.
 
-(: %text-compare (text text (integer integer -> boolean) -> boolean))
+(: %text-compare (text text (fixnum fixnum -> boolean) -> boolean))
 (define (%text-compare a b make-boolean)
   (let* ((na (text-length a))
          (nb (text-length b))
@@ -885,7 +885,7 @@
 ;;; to strings and compared using string-pred.
 
 (: %text-compare-ci
-   (text text (integer integer -> boolean) (string string -> boolean)
+   (text text (fixnum fixnum -> boolean) (string string -> boolean)
      -> boolean))
 (define (%text-compare-ci a b make-boolean string-pred)
   (let* ((na (text-length a))
@@ -924,17 +924,17 @@
                            (start2 0)
                            (end2 len2))
         (when (pair? args)
-          (assert-type name (exact-integer? start1))
-          (assert-type name (exact-integer? end1))
-          (assert-type name (exact-integer? start2))
-          (assert-type name (exact-integer? end2))
+          (assert-type name (fixnum? start1))
+          (assert-type name (fixnum? end1))
+          (assert-type name (fixnum? start2))
+          (assert-type name (fixnum? end2))
           (%check-range name t1 start1 end1)
           (%check-range name t2 start2 end2))
         (proc txt1 txt2 start1 end1 start2 end2)))))
 
 (: textual-prefix-length
-   (textual textual #!optional integer integer integer integer
-     -> integer))
+   (textual textual #!optional fixnum fixnum fixnum fixnum
+     -> fixnum))
 (define textual-prefix-length
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
@@ -942,8 +942,8 @@
    'textual-prefix-length))
 
 (: textual-suffix-length
-   (textual textual #!optional integer integer integer integer
-     -> integer))
+   (textual textual #!optional fixnum fixnum fixnum fixnum
+     -> fixnum))
 (define textual-suffix-length
   (%make-text-prefix/suffix-proc
    (lambda (txt1 txt2 start1 end1 start2 end2)
@@ -951,7 +951,7 @@
    'textual-suffix-length))
 
 (: textual-prefix?
-   (textual textual #!optional integer integer integer integer
+   (textual textual #!optional fixnum fixnum fixnum fixnum
      -> boolean))
 (define textual-prefix?
   (%make-text-prefix/suffix-proc
@@ -960,7 +960,7 @@
    'textual-prefix?))
 
 (: textual-suffix?
-   (textual textual #!optional integer integer integer integer
+   (textual textual #!optional fixnum fixnum fixnum fixnum
      -> boolean))
 (define textual-suffix?
   (%make-text-prefix/suffix-proc
@@ -971,7 +971,7 @@
 ;;; All error checking has already been done.
 
 (: %text-prefix-length
-   (text text integer integer integer integer -> integer))
+   (text text fixnum fixnum fixnum fixnum -> fixnum))
 (define (%text-prefix-length txt1 txt2 start1 end1 start2 end2)
   (let* ((k1   (- end1 start1))
          (k2   (- end2 start2))
@@ -985,7 +985,7 @@
             (else (- i start1))))))
 
 (: %text-suffix-length
-   (text text integer integer integer integer -> integer))
+   (text text fixnum fixnum fixnum fixnum -> fixnum))
 (define (%text-suffix-length txt1 txt2 start1 end1 start2 end2)
   (let* ((k1     (- end1 start1))
          (k2     (- end2 start2))
@@ -999,7 +999,7 @@
             (else (- end1 i 1))))))
 
 (: %text-prefix?
-   (text text integer integer integer integer -> boolean))
+   (text text fixnum fixnum fixnum fixnum -> boolean))
 (define (%text-prefix? txt1 txt2 start1 end1 start2 end2)
   (let ((k1 (- end1 start1))
         (k2 (- end2 start2)))
@@ -1007,7 +1007,7 @@
          (= k1 (%text-prefix-length txt1 txt2 start1 end1 start2 end2)))))
 
 (: %text-suffix?
-   (text text integer integer integer integer -> boolean))
+   (text text fixnum fixnum fixnum fixnum -> boolean))
 (define (%text-suffix? txt1 txt2 start1 end1 start2 end2)
   (let ((k1 (- end1 start1))
         (k2 (- end2 start2)))
@@ -1019,16 +1019,16 @@
 ;;; Searching
 
 (: textual-index
-   (textual (char -> boolean) #!optional integer integer
-     -> (or integer false)))
+   (textual (char -> boolean) #!optional fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-index t pred . args)
   (let* ((txt (%textual->text t 'textual-index t))
          (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
       (assert-type 'textual-index (procedure? pred))
       (when (pair? args)
-        (assert-type 'textual-index (exact-integer? start))
-        (assert-type 'textual-index (exact-integer? end))
+        (assert-type 'textual-index (fixnum? start))
+        (assert-type 'textual-index (fixnum? end))
         (%check-range 'textual-index t start end))
       (let loop ((i start))
          (cond ((= i end) #f)
@@ -1036,16 +1036,16 @@
                (else (loop (+ i 1))))))))
 
 (: textual-index-right
-   (textual (char -> boolean) #!optional integer integer
-     -> (or integer false)))
+   (textual (char -> boolean) #!optional fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-index-right t pred . args)
   (let* ((txt (%textual->text t 'textual-index-right t))
          (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
       (assert-type 'textual-index-right (procedure? pred))
       (when (pair? args)
-        (assert-type 'textual-index-right (exact-integer? start))
-        (assert-type 'textual-index-right (exact-integer? end))
+        (assert-type 'textual-index-right (fixnum? start))
+        (assert-type 'textual-index-right (fixnum? end))
         (%check-range 'textual-index-right t start end))
       (let loop ((i (- end 1)))
         (cond ((< i start) #f)
@@ -1053,20 +1053,20 @@
               (else (loop (- i 1))))))))
 
 (: textual-skip
-   (textual (char -> boolean) #!optional integer integer
-     -> (or integer false)))
+   (textual (char -> boolean) #!optional fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-skip txt pred . rest)
   (apply textual-index txt (lambda (x) (not (pred x))) rest))
 
 (: textual-skip-right
-   (textual (char -> boolean) #!optional integer integer
-     -> (or integer false)))
+   (textual (char -> boolean) #!optional fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-skip-right txt pred . rest)
   (apply textual-index-right txt (lambda (x) (not (pred x))) rest))
 
 (: textual-contains
-   (textual textual #!optional integer integer integer integer
-     -> (or integer false)))
+   (textual textual #!optional fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-contains t1 t2 . args)
   (let ((txt1 (%textual->text t1 'textual-contains t1 t2))
         (txt2 (%textual->text t2 'textual-contains t1 t2)))
@@ -1075,10 +1075,10 @@
                          (start2 0)
                          (end2 (text-length txt2)))
       (when (pair? args)
-        (assert-type 'textual-contains (exact-integer? start1))
-        (assert-type 'textual-contains (exact-integer? end1))
-        (assert-type 'textual-contains (exact-integer? start2))
-        (assert-type 'textual-contains (exact-integer? end2))
+        (assert-type 'textual-contains (fixnum? start1))
+        (assert-type 'textual-contains (fixnum? end1))
+        (assert-type 'textual-contains (fixnum? start2))
+        (assert-type 'textual-contains (fixnum? end2))
         (%check-range 'textual-contains t1 start1 end1)
         (%check-range 'textual-contains t2 start2 end2))
       (%textual-contains txt1 txt2 start1 end1 start2 end2))))
@@ -1103,8 +1103,8 @@
 (define %threshold:rightmost 2) ; are rightmost characters the same?
 
 (: %textual-contains
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains txt1 txt2 start1 end1 start2 end2)
   (let ((n1 (- end1 start1))
         (n2 (- end2 start2)))
@@ -1131,8 +1131,8 @@
            (%textual-contains:rabin-karp txt1 txt2 start1 end1 start2 end2)))))
 
 (: %textual-contains:naive
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains:naive txt1 txt2 start1 end1 start2 end2)
   (let* ((n1 (- end1 start1))
          (n2 (- end2 start2))
@@ -1146,8 +1146,8 @@
              (loop (+ i 1)))))))
 
 (: %textual-contains:rabin-karp
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains:rabin-karp txt1 txt2 start1 end1 start2 end2)
   (define (hash txt start end)
     (do ((i start (+ i 1))
@@ -1177,8 +1177,8 @@
 ;;; but the name is already pretty long.
 
 (: %textual-contains:boyer-moore
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains:boyer-moore txt1 txt2 start1 end1 start2 end2)
   (if (= start2 end2)
       start1
@@ -1213,8 +1213,8 @@
 ;;; FIXME: no Rabin-Karp algorithm for now
 
 (: textual-contains-right
-   (textual textual #!optional integer integer integer integer
-     -> (or integer false)))
+   (textual textual #!optional fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (textual-contains-right t1 t2 . rest0)
   (let* ((txt1 (%textual->text t1 'textual-contains-right t1 t2))
          (txt2 (%textual->text t2 'textual-contains-right t1 t2))
@@ -1228,10 +1228,10 @@
          (end2 (if (null? rest) (text-length txt2) (car rest)))
          (rest (if (null? rest) rest (cdr rest))))
     (when (pair? rest0)
-      (assert-type 'textual-contains-right (exact-integer? start1))
-      (assert-type 'textual-contains-right (exact-integer? end1))
-      (assert-type 'textual-contains-right (exact-integer? start2))
-      (assert-type 'textual-contains-right (exact-integer? end2))
+      (assert-type 'textual-contains-right (fixnum? start1))
+      (assert-type 'textual-contains-right (fixnum? end1))
+      (assert-type 'textual-contains-right (fixnum? start2))
+      (assert-type 'textual-contains-right (fixnum? end2))
       (%check-range 'textual-contains-right t1 start1 end1)
       (%check-range 'textual-contains-right t2 start2 end2))
     (if (null? rest)
@@ -1239,8 +1239,8 @@
         (apply complain 'textual-contains-right t1 t2 rest0))))
 
 (: %textual-contains-right
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains-right txt1 txt2 start1 end1 start2 end2)
   (let ((n1 (- end1 start1))
         (n2 (- end2 start2)))
@@ -1258,8 +1258,8 @@
             txt1 txt2 start1 end1 start2 end2)))))
 
 (: %textual-contains-right:naive
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains-right:naive txt1 txt2 start1 end1 start2 end2)
   (let* ((n1 (- end1 start1))
          (n2 (- end2 start2))
@@ -1276,8 +1276,8 @@
 ;;; but the name is already pretty long.
 
 (: %textual-contains-right:boyer-moore
-   (textual textual integer integer integer integer
-     -> (or integer false)))
+   (textual textual fixnum fixnum fixnum fixnum
+     -> (or fixnum false)))
 (define (%textual-contains-right:boyer-moore txt1 txt2 start1 end1 start2 end2)
   (if (= start2 end2)
       end1
@@ -1464,7 +1464,7 @@
   (textual-concatenate texts))
 
 (: textual-concatenate-reverse
-   ((list-of textual) #!optional textual integer -> text))
+   ((list-of textual) #!optional textual fixnum -> text))
 (define textual-concatenate-reverse
   (case-lambda
    ((texts)
@@ -1522,7 +1522,7 @@
 
 ;;; Fold & map & friends
 
-(: textual-fold (procedure * textual #!optional integer integer -> *))
+(: textual-fold (procedure * textual #!optional fixnum fixnum -> *))
 (define-textual-start-end (textual-fold kons knil txt start end)
   (assert-type 'textual-fold (procedure? kons))
   (let loop ((knil knil)
@@ -1533,7 +1533,7 @@
         knil)))
 
 (: textual-fold-right
-   (procedure * textual #!optional integer integer -> *))
+   (procedure * textual #!optional fixnum fixnum -> *))
 (define-textual-start-end (textual-fold-right kons knil txt start end)
   (assert-type 'textual-fold (procedure? kons))
   (let loop ((knil knil)
@@ -1683,7 +1683,7 @@
                  (loop (+ i 1)))))))
 
 ;; FIXME: Rewrite.
-(: %fetch-all ((list-of text) integer -> (list-of char)))
+(: %fetch-all ((list-of text) fixnum -> (list-of char)))
 (define (%fetch-all texts i)
   (if (null? texts)
       '()
@@ -1693,7 +1693,7 @@
 ;;; FIXME: there's no reason to convert a string to a text here
 
 (: textual-map-index
-   ((integer -> (or char string text)) textual #!optional integer integer
+   ((fixnum -> (or char string text)) textual #!optional fixnum fixnum
      -> text))
 (define-textual-start-end (textual-map-index proc txt start end)
   (assert-type 'textual-map-index (procedure? proc))
@@ -1725,7 +1725,7 @@
 
 ;; FIXME: Remove unneeded binding?
 (: textual-for-each-index
-   ((integer -> *) textual #!optional integer integer -> undefined))
+   ((fixnum -> *) textual #!optional fixnum fixnum -> undefined))
 (define-textual-start-end (textual-for-each-index proc txt start end)
   (assert-type 'textual-for-each-index (procedure? proc))
   (let ((n end))
@@ -1736,13 +1736,13 @@
 
 ;; FIXME: Better optionals handling.
 (: textual-count
-   (textual (char -> boolean) #!optional integer integer -> integer))
+   (textual (char -> boolean) #!optional fixnum fixnum -> fixnum))
 (define-textual (textual-count txt pred . rest)
   (let-optionals rest ((start 0) (end (text-length txt)))
     (assert-type 'textual-count (procedure? pred))
     (when (pair? rest)
-      (assert-type 'textual-count (exact-integer? start))
-      (assert-type 'textual-count (exact-integer? end))
+      (assert-type 'textual-count (fixnum? start))
+      (assert-type 'textual-count (fixnum? end))
       (%check-range 'textual-count txt start end))
     (textual-fold (lambda (c n)
                     (if (pred c)
@@ -1751,7 +1751,7 @@
                   0 txt start end)))
 
 (: textual-filter
-   ((char -> boolean) textual #!optional integer integer -> text))
+   ((char -> boolean) textual #!optional fixnum fixnum -> text))
 (define-textual-start-end (textual-filter pred txt start end)
   (assert-type 'textual-filter (procedure? pred))
   (textual-map (lambda (c) (if (pred c) c "")) (subtext txt start end)))
@@ -1759,14 +1759,14 @@
 ;;; FIXME: checks arguments twice
 
 (: textual-filter
-   ((char -> boolean) textual #!optional integer integer -> text))
+   ((char -> boolean) textual #!optional fixnum fixnum -> text))
 (define-textual-start-end (textual-remove pred txt start end)
   (textual-filter (lambda (c) (not (pred c))) txt start end))
 
 ;;; FIXME: not linear-time unless string-set! is O(1)
 ;;; (but this is a pretty useless procedure anyway)
 
-(: textual-reverse (textual #!optional integer integer -> text))
+(: textual-reverse (textual #!optional fixnum fixnum -> text))
 (define-textual-start-end (textual-reverse txt start end)
   (let* ((n (- end start))
          (s (make-string n)))
@@ -1780,16 +1780,16 @@
 ;;; Replication & splitting
 
 (: textual-replicate
-   (textual integer integer #!optional integer integer -> text))
+   (textual fixnum fixnum #!optional fixnum fixnum -> text))
 (define (textual-replicate t from to . args)
-  (assert-type 'textual-replicate (exact-integer? from))
-  (assert-type 'textual-replicate (exact-integer? to))
+  (assert-type 'textual-replicate (fixnum? from))
+  (assert-type 'textual-replicate (fixnum? to))
   (let* ((txt (%textual->text t 'textual-replicate t))
          (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
       (when (pair? args)
-        (assert-type 'textual-replicate (exact-integer? start))
-        (assert-type 'textual-replicate (exact-integer? end))
+        (assert-type 'textual-replicate (fixnum? start))
+        (assert-type 'textual-replicate (fixnum? end))
         (%check-range 'textual-replicate t start end))
       (%text-replicate (subtext txt start end) from to))))
 
@@ -1811,7 +1811,7 @@
                            from to))))))))
 
 (: textual-split
-   (textual textual #!optional symbol (or integer false) integer integer
+   (textual textual #!optional symbol (or fixnum false) fixnum fixnum
      -> (list-of text)))
 (define textual-split
   (case-lambda
@@ -1826,7 +1826,7 @@
     (textual-split s delimiter grammar #f))
    ((s0 delimiter grammar limit)
     (assert-type 'textual-split (symbol? grammar))
-    (assert-type 'textual-split (or (not limit) (exact-integer? limit)))
+    (assert-type 'textual-split (or (not limit) (fixnum? limit)))
     (unless (memq grammar '(infix strict-infix prefix suffix))
       (error 'textual-split "invalid grammar argument" grammar))
     (let* ((s (%textual->text s0 'textual-split s0 delimiter grammar limit))
@@ -1858,7 +1858,7 @@
              (reverse (cdr (reverse splits)))
              splits)))))))
 
-(: %text-split-into-characters (text integer -> (list-of text)))
+(: %text-split-into-characters (text fixnum -> (list-of text)))
 (define (%text-split-into-characters s limit)
   (let ((n (text-length s)))
     (cond ((> n (+ limit 1))
@@ -1869,7 +1869,7 @@
 
 ;;; FIXME: inefficient
 
-(: %text-split-using-word (text text integer -> (list-of text)))
+(: %text-split-using-word (text text fixnum -> (list-of text)))
 (define (%text-split-using-word txt sep limit)
   (let loop ((i 0)
              (limit limit)

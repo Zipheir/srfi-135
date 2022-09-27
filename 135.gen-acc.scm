@@ -2,14 +2,14 @@
 
 ;; text-ref is O(1), so this always converts strings to texts rather
 ;; than dispatching to string->generator.
-(: textual->generator (textual #!optional integer integer -> procedure))
+(: textual->generator (textual #!optional fixnum fixnum -> procedure))
 (define (textual->generator t . args)
   (assert-type 'textual->generator (textual? t))
   (let* ((txt (textual->text t))
          (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
-      (assert-type 'textual->generator (exact-integer? start))
-      (assert-type 'textual->generator (exact-integer? end))
+      (assert-type 'textual->generator (fixnum? start))
+      (assert-type 'textual->generator (fixnum? end))
       (%check-range 'textual->generator t start end)
       (lambda ()
         (if (= start end)
@@ -18,7 +18,7 @@
               (set! start (+ start 1))
               c))))))
 
-(: generator->text (procedure #!optional integer -> text))
+(: generator->text (procedure #!optional fixnum -> text))
 (define generator->text
   (case-lambda
     ((g)
@@ -29,7 +29,7 @@
                   (g)))
     ((g k)
      (assert-type 'generator->text (procedure? g))
-     (assert-type 'generator->text (exact-natural? k))
+     (assert-type 'generator->text (natural-fixnum? k))
      (text-unfold (lambda (p)
                     (or (eof-object? (car p)) (zero? (cdr p))))
                   car

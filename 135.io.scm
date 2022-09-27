@@ -1,9 +1,5 @@
 ;;;; Analogues of the familiar I/O procedures for texts.
 
-(: exact-natural? (* -> boolean))
-(define (exact-natural? x)
-  (and (exact-integer? x) (>= x 0)))
-
 ;;;; Input
 
 ;; FIXME: This correctly handles only UNIX-style lines.  Per R7RS
@@ -20,9 +16,9 @@
                      (lambda (_) (read-char port))
                      (read-char port)))))
 
-(: read-text (integer #!optional input-port -> (or eof text)))
+(: read-text (fixnum #!optional input-port -> (or eof text)))
 (define (read-text k . args)
-  (assert-type 'read-text (exact-natural? k))
+  (assert-type 'read-text (natural-fixnum? k))
   (let-optionals args ((port (current-input-port)))
     (assert-type 'read-text (input-port? port))
     (if (eof-object? (peek-char port))  ; workaround utf8's read-string
@@ -30,7 +26,7 @@
         (string->text-1 (read-string k port)))))
 
 ;; Analogous to read-lines from (chicken io).
-(: text-read-lines (#!optional input-port integer -> (list-of text)))
+(: text-read-lines (#!optional input-port fixnum -> (list-of text)))
 (define text-read-lines
   (case-lambda
     (() (text-read-lines (current-input-port)))
@@ -42,7 +38,7 @@
              (text-read-line port)))
     ((port max)
      (assert-type 'text-read-lines (input-port? port))
-     (assert-type 'text-read-lines (exact-natural? max))
+     (assert-type 'text-read-lines (natural-fixnum? max))
      (unfold (lambda (p)
                (or (eof-object? (car p)) (zero? (cdr p))))
              car
@@ -53,7 +49,7 @@
 ;;;; Output
 
 (: write-textual
-   (textual #!optional output-port integer integer -> undefined))
+   (textual #!optional output-port fixnum fixnum -> undefined))
 (define write-textual
   (case-lambda
     ((t) (write-textual t (current-output-port)))
@@ -65,8 +61,8 @@
     ((t port start) (write-textual t port start (textual-length t)))
     ((t port start end)
      (assert-type 'write-textual (output-port? port))
-     (assert-type 'write-textual (exact-integer? start))
-     (assert-type 'write-textual (exact-integer? end))
+     (assert-type 'write-textual (fixnum? start))
+     (assert-type 'write-textual (fixnum? end))
      (%check-range 'write-textual t start end)
      (cond ((string? t)
             (write-string (substring/shared t start end) #f port))
