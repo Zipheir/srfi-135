@@ -4,15 +4,13 @@
 ;; than dispatching to string->generator.
 (: textual->generator (textual #!optional integer integer -> procedure))
 (define (textual->generator t . args)
+  (assert-type 'textual->generator (textual? t))
   (let* ((txt (textual->text t))
          (len (text-length txt)))
     (let-optionals args ((start 0) (end len))
-      (assert (exact-integer? start)
-        'textual->generator "illegal argument" start)
-      (assert (exact-integer? end)
-        'textual->generator "illegal argument" end)
-      (assert (<= 0 start end len)
-        'textual->generator "start/end out of range" start end t)
+      (assert-type 'textual->generator (exact-integer? start))
+      (assert-type 'textual->generator (exact-integer? end))
+      (%check-range 'textual->generator t start end)
       (lambda ()
         (if (= start end)
             #!eof
@@ -24,14 +22,14 @@
 (define generator->text
   (case-lambda
     ((g)
-     (assert (procedure? g) 'generator->text "illegal argument" g)
+     (assert-type 'generator->text (procedure? g))
      (text-unfold eof-object?
                   values
                   (lambda (_) (g))
                   (g)))
     ((g k)
-     (assert (procedure? g) 'generator->text "illegal argument" g)
-     (assert (exact-natural? k) 'generator->text "illegal argument" k)
+     (assert-type 'generator->text (procedure? g))
+     (assert-type 'generator->text (exact-natural? k))
      (text-unfold (lambda (p)
                     (or (eof-object? (car p)) (zero? (cdr p))))
                   car
