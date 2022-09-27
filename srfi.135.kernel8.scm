@@ -39,6 +39,7 @@
 
 (define-type bytevector u8vector)
 
+(include "exceptions.scm")
 (include "util.scm")
 
 ;;; 1-argument version
@@ -80,13 +81,14 @@
 
 (: text-length (text -> integer))
 (define (text-length txt)
-  (assert (text? txt) 'text-length "illegal argument" txt)
+  (assert-type 'text-length (text? txt))
   (length&i0.length (text.k txt)))
 
 (: text-ref (text integer -> char))
 (define (text-ref txt i)
-  (assert (text? txt) 'text-ref "illegal argument" txt)
-  (assert (exact-natural? i) 'text-ref "illegal argument" i)
+  (assert-type 'text-ref (text? txt))
+  (assert-type 'text-ref (exact-integer? i))
+  (%check-index 'text-ref txt i)
   (let* ((k      (text.k txt))
          (chunks (text.chunks txt))
          (len    (length&i0.length k))
@@ -94,7 +96,8 @@
          (i+i0   (+ i i0))
          (j      (quotient i+i0 chunk-size))
          (ii     (remainder i+i0 chunk-size)))
-    (assert (< i len) 'text-ref "index out of range" txt i)
+    (unless (and (>= i 0) (< i len))
+      (bounds-exception 'text-ref "index out of range" txt i))
     (let* ((sj (vector-ref chunks j))
            (sjn (bytevector-length sj)))
       (if (if (< j (- (vector-length chunks) 1))
@@ -181,8 +184,8 @@
 
 (: text-tabulate ((integer -> char) integer -> text))
 (define (text-tabulate proc len)
-  (assert (procedure? proc) 'text-tabulate "illegal argument" proc)
-  (assert (exact-natural? len) 'text-tabulate "illegal argument" len)
+  (assert-type 'text-tabulate (procedure? proc))
+  (assert-type 'text-tabulate (exact-integer? len))
   (if (= 0 len)
       the-empty-text
       (let loop ((i len)       ; highest index that's been tabulated
@@ -202,8 +205,7 @@
               (else
                (let* ((i-1 (- i 1))
                       (c (proc i-1)))
-                 (assert (char? c) 'text-tabulate
-                   "proc returned a non-character value" c len)
+                 (assert-type 'text-tabulate (char? c))
                  (let ((cp (char->integer c)))
                    (loop i-1
                          chunks
@@ -257,11 +259,11 @@
 
 (: subtext (text integer integer -> text))
 (define (subtext txt start end)
-  (assert (text? txt) 'subtext "illegal argument" txt)
-  (assert (exact-integer? start) 'subtext "illegal argument" start)
-  (assert (exact-integer? end) 'subtext "illegal argument" end)
-  (assert (<= 0 start end (%text-length txt))
-    'subtext "start/end out of range" txt start end)
+  (assert-type 'subtext (text? txt))
+  (assert-type 'subtext (exact-integer? start))
+  (assert-type 'subtext (exact-integer? end))
+  (unless (<= 0 start end (%text-length txt))
+    (bounds-exception 'subtext "start/end out of range" txt start end))
   (%subtext txt start end))
 
 (: %subtext (text integer integer -> text))
@@ -318,15 +320,17 @@
 (: textual-concatenate ((list-of textual) -> text))
 (define (textual-concatenate texts)
   ;; Not foolproof, but cheaper than list?.
-  (assert (pair-or-null? texts)
-    'textual-concatenate "illegal argument" texts)
+  (assert-type 'textual-concatenate (pair-or-null? texts))
   (cond ((null? texts) the-empty-text)
         ((null? (cdr texts))
          (let ((txt (car texts)))
            (cond ((text? txt) txt)
                  ((string? txt)
                   (string->text-1 txt))
-                 (else (complain 'textual-concatenate texts)))))
+                 (else
+                  (type-exception 'textual-concatenate
+                                  "invalid list element"
+                                  texts)))))
         (else
          (let loop ((items (reverse texts))
                     (real-texts '())
@@ -347,7 +351,9 @@
                   (loop (cons (string->text-1 (car items)) (cdr items))
                         real-texts n longest longest-length))
                  (else
-                  (complain 'textual-concatenate texts)))))))
+                  (type-exception 'textual-concatenate
+                                  "invalid list element"
+                                  texts)))))))
 
 ;;; All of the texts are really texts.  No strings.
 ;;; n is the length of the result.
