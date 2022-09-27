@@ -205,12 +205,13 @@
                       (chars (take chars k)))
                  (loop k texts chars seed)))
               ((stop? seed)
-               (let* ((texts (if (null? chars)
-                                 texts
-                                 (cons (reverse-list->text chars) texts)))
-                      (final (make-final seed)))
-                 (assert-type 'text-unfold (%textual-or-char? final))
-                 (textual-concatenate-reverse texts final)))
+               (let ((texts (if (null? chars)
+                                texts
+                                (cons (reverse-list->text chars) texts)))
+                     (final (make-final seed)))
+                 (textual-concatenate-reverse
+                  texts
+                  (%textify-final 'text-unfold final))))
               (else
                (let ((x (mapper seed)))
                  (assert-type 'text-unfold (%textual-or-char? x))
@@ -263,8 +264,9 @@
                                  texts
                                  (cons (list->text chars) texts)))
                       (final (make-final seed)))
-                 (assert-type 'text-unfold (%textual-or-char? final))
-                 (textual-concatenate (cons final texts))))
+                 (textual-concatenate
+                  (cons (%textify-final 'text-unfold-right final)
+                        texts))))
               (else
                (let ((x (mapper seed)))
                  (assert-type 'text-unfold (%textual-or-char? x))
@@ -283,6 +285,14 @@
                               texts
                               (append (textual->list x) chars)
                               (succ seed))))))))))))
+
+;; Convert the final element of an unfold to a text.
+(: %textify-final (symbol (or char string text) -> text))
+(define (%textify-final loc x)
+  (cond ((char? x) (text x))
+        ((string? x) (string->text x))
+        ((text? x) x)
+        (else (type-exception loc "invalid final value" x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
