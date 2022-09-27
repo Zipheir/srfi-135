@@ -157,7 +157,7 @@
 
 (: make-text (fixnum char -> text))
 (define (make-text n c)
-  (assert-type 'make-text (exact-natural? n))
+  (assert-type 'make-text (natural-fixnum? n))
   (assert-type 'make-text (char? c))
   (text-tabulate (lambda (i) c) n))
 
@@ -599,7 +599,7 @@
   (let* ((txt (%textual->text t 'textual-pad t))
          (old-len (text-length txt)))
     (let-optionals args ((c #\space) (start 0) (end old-len))
-      (assert-type 'text-pad (exact-natural? len))
+      (assert-type 'text-pad (natural-fixnum? len))
       (when (pair? args)
         (assert-type 'text-pad (char? c))
         (assert-type 'text-pad (fixnum? start))
@@ -631,7 +631,7 @@
   (let* ((txt (%textual->text t 'textual-pad-right t len))
          (old-len (text-length txt)))
     (let-optionals args ((c #\space) (start 0) (end old-len))
-      (assert-type 'text-pad-right (exact-natural? len))
+      (assert-type 'text-pad-right (natural-fixnum? len))
       (when (pair? args)
         (assert-type 'text-pad-right (char? c))
         (assert-type 'text-pad-right (fixnum? start))
