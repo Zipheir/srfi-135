@@ -31,7 +31,8 @@
         (test)
         (srfi 4)
         (srfi 158)
-        (srfi 135))
+        (srfi 135)
+        (srfi 135 extensions))
 
 (define-syntax OR
   (syntax-rules ()
