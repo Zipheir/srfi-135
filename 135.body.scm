@@ -42,7 +42,7 @@
     (bounds-exception loc "index out of bounds" i bv)))
 
 ;; Check that [start, end) defines a valid range of bv.
-(: %check-bv-range (symbol bytevector integer -> undefined))
+(: %check-bv-range (symbol bytevector integer integer -> undefined))
 (define (%check-bv-range loc bv start end)
   (unless (<= 0 start end (bytevector-length bv))
     (bounds-exception loc "invalid range" start end bv)))
