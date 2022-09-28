@@ -28,10 +28,10 @@
    string->text-1
    )
 
-(import (except scheme string-length string-ref)
+(import (except scheme string-length string-ref write-char)
         (only r7rs bytevector-length bytevector-u8-ref write-bytevector
                    bytevector-u8-set! make-bytevector make-list)
-        (only utf8 string-length string-ref)
+        (only utf8 string-length string-ref write-char write-string)
         (chicken base)
         (chicken condition)
         (chicken type)
@@ -65,6 +65,22 @@
 
 (define-type text (struct text-rtd))
 (define-type textual (or text string))
+
+;; This is copied from the main module.  Since the record is defined
+;; here, the record printer must be set here, too.
+(: %write-text (text output-port -> undefined))
+(define (%write-text txt port)
+  (let ((len (%text-length txt)))
+    (do ((i (the fixnum 0) (+ i 1)))
+        ((= i len) (void))
+      (write-char (text-ref/no-checks txt i) port))))
+
+(set-record-printer!
+ text-rtd
+ (lambda (txt port)
+   (write-string "«" port)
+   (%write-text txt port)
+   (write-string "»" port)))
 
 (: %new-text (fixnum fixnum (vector-of bytevector) -> text))
 (define (%new-text len i0 chunks)
