@@ -1,5 +1,5 @@
 ((synopsis "SRFI 135: Immutable Texts")
- (version "0.3")
+ (version "1.0.0")
  (category data)
  (author "William D. Clinger")
  (license "MIT")
