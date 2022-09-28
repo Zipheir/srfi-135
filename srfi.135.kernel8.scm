@@ -184,6 +184,16 @@
                             bits4)))
              (integer->char cp))))))
 
+(: list->bytevector ((list-of fixnum) -> bytevector))
+(define (list->bytevector bytes)
+  (let* ((n (length bytes))
+         (bv (make-bytevector n)))
+    (do ((i 0 (+ i 1))
+         (bytes bytes (cdr bytes)))
+        ((= i n))
+      (bytevector-u8-set! bv i (car bytes)))
+    bv))
+
 ;;; text-tabulate avoids side effects (in case proc returns more than once)
 
 (: text-tabulate ((fixnum -> char) fixnum -> text))
