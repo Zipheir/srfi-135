@@ -9,6 +9,3 @@
 
 (define (natural-fixnum? x)
   (and (fixnum? x) (>= x 0)))
-
-(define (%textual-or-char? x)
-  (or (string? x) (text? x) (char? x)))

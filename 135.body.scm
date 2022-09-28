@@ -294,6 +294,10 @@
         ((text? x) x)
         (else (type-exception loc "invalid final value" x))))
 
+(: %textual-or-char? (* -> boolean))
+(define (%textual-or-char? x)
+  (or (string? x) (text? x) (char? x)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Conversion
