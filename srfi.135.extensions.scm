@@ -55,6 +55,7 @@
     (unless (<= 0 start end (textual-length t))
       (bounds-exception loc "invalid range" start end t)))
 
+  (include "util.scm")
   (include "135.gen-acc.scm")
   (include "135.io.scm")
 )
